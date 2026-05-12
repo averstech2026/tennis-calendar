@@ -4,6 +4,28 @@
  <meta charset="UTF-8">
  <title>Теннисный Календарь Pro</title>
  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<!-- Firebase SDK (совместимые версии) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDhw_yyksIEB7-yTOnfknf4V2poXQz7jng",
+    authDomain: "tennisdata-58abf.firebaseapp.com",
+    databaseURL: "https://tennisdata-58abf-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "tennisdata-58abf",
+    storageBucket: "tennisdata-58abf.firebasestorage.app",
+    messagingSenderId: "830103162787",
+    appId: "1:830103162787:web:cf002e185e9df21b875416",
+    measurementId: "G-3F53W2SZQ4"
+  };
+
+  // Инициализация
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+</script>
+
  <style>
    body { font-family: 'Segoe UI', sans-serif; background: #f4f7f9; padding: 10px; margin: 0; color: #333; -webkit-tap-highlight-color: transparent; }
    .container { max-width: 420px; margin: auto; background: white; padding: 15px; border-radius: 28px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); min-height: 550px; }
@@ -245,20 +267,46 @@
    if (l.includes('улица')) return 'уг'; if (l.includes('хард')) return 'дх'; return full.substring(0,3);
  }
 
- function loadData() {
-   const monthIdx = document.getElementById('monthSelect').value;
-   if (typeof google !== 'undefined') {
-     google.script.run.withSuccessHandler(function(r) { schedule = r.schedule || {}; document.getElementById('playerCount').value = r.players || 2; renderCalendar(); }).getCloudData(monthIdx);
-   } else { renderCalendar(); }
- }
+ // Загрузка данных из Firebase
+function loadData() {
+  const monthIdx = document.getElementById('monthSelect').value;
+  
+  db.ref('tennis/' + monthIdx).once('value').then((snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+      schedule = data.schedule || {};
+      document.getElementById('playerCount').value = data.players || 2;
+    } else {
+      schedule = {};
+      document.getElementById('playerCount').value = 2;
+    }
+    renderCalendar();
+  }).catch((error) => {
+    console.error("Ошибка загрузки:", error);
+    renderCalendar();
+  });
+}
 
- function saveDataToStorage() {
-   const monthIdx = document.getElementById('monthSelect').value;
-   const players = document.getElementById('playerCount').value;
-   if (typeof google !== 'undefined') { google.script.run.saveCloudData(monthIdx, schedule, players); }
- }
+ // Сохранение данных в Firebase
+function saveDataToStorage() {
+  const monthIdx = document.getElementById('monthSelect').value;
+  const players = document.getElementById('playerCount').value;
+  
+  db.ref('tennis/' + monthIdx).set({
+    schedule: schedule,
+    players: players
+  }).then(() => {
+    console.log("Данные успешно сохранены в облако!");
+  }).catch((error) => {
+    alert("Ошибка сохранения: " + error.message);
+  });
+}
 
- function initMonth() { loadData(); deselect(); }
+ // Инициализация при смене месяца
+function initMonth() { 
+  deselect();
+  loadData(); 
+}
 
  function deselect() {
    selectedDayNum = null; document.getElementById('editorPanel').style.display = 'none';
