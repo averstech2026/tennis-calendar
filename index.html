@@ -387,26 +387,56 @@ function initMonth() {
  }
 
  function saveData() {
-   const price = parseFloat(document.getElementById('priceInput').value);
-   const hours = parseFloat(document.getElementById('hoursInput').value);
-   const time = document.getElementById('timeInput').value;
-   const locSel = document.getElementById('locationSelect').value;
-   const location = locSel === 'другое' ? (document.getElementById('customLocation').value || 'другое') : locSel;
-   const guests = parseInt(document.getElementById('guestInput').value) || 0;
-   const monthIdx = parseInt(document.getElementById('monthSelect').value);
-   const targetWeekday = new Date(2026, monthIdx, selectedDayNum).getDay();
-   
-   lastUsedByWeekday[targetWeekday] = { price, hours, location, time };
-   if(document.getElementById('batchCheck').checked) {
-     const daysInMonth = new Date(2026, monthIdx + 1, 0).getDate();
-     for(let d=1; d<=daysInMonth; d++) {
-       if(new Date(2026, monthIdx, d).getDay() === targetWeekday) {
-         if(!schedule[d] || d === selectedDayNum) schedule[d] = { price, hours, location, time, guests: (d === selectedDayNum ? guests : 0) };
-       }
-     }
-   } else { schedule[selectedDayNum] = { price, hours, location, time, guests }; }
-   saveDataToStorage(); deselect();
- }
+  const price = parseFloat(document.getElementById('priceInput').value);
+  const hours = parseFloat(document.getElementById('hoursInput').value);
+  const time = document.getElementById('timeInput').value;
+  const locSel = document.getElementById('locationSelect').value;
+  const location = locSel === 'другое' ? (document.getElementById('customLocation').value || 'другое') : locSel;
+  const guests = parseInt(document.getElementById('guestInput').value) || 0;
+  const monthIdx = parseInt(document.getElementById('monthSelect').value);
+  
+  // 1. ГОТОВИМ TIMESTAMP
+  const [h, m] = time.split(':').map(Number);
+  const eventDate = new Date(2026, monthIdx, selectedDayNum, h, m);
+  const timestamp = eventDate.getTime(); 
+
+  const targetWeekday = eventDate.getDay();
+  lastUsedByWeekday[targetWeekday] = { price, hours, location, time };
+
+  // 2. ОБНОВЛЯЕМ СОХРАНЕНИЕ В ОБЪЕКТ schedule
+  if(document.getElementById('batchCheck').checked) {
+    const daysInMonth = new Date(2026, monthIdx + 1, 0).getDate();
+    for(let d=1; d<=daysInMonth; d++) {
+      if(new Date(2026, monthIdx, d).getDay() === targetWeekday) {
+        // Для каждого дня в серии создаем свой timestamp
+        const dDate = new Date(2026, monthIdx, d, h, m);
+        if(!schedule[d] || d === selectedDayNum) {
+          schedule[d] = { 
+            price, 
+            hours, 
+            location, 
+            time, 
+            guests: (d === selectedDayNum ? guests : 0),
+            timestamp: dDate.getTime() // <-- Добавили сюда
+          };
+        }
+      }
+    }
+  } else { 
+    // Обычное сохранение одного дня
+    schedule[selectedDayNum] = { 
+      price, 
+      hours, 
+      location, 
+      time, 
+      guests, 
+      timestamp: timestamp // <-- И добавили сюда
+    }; 
+  }
+  
+  saveDataToStorage(); 
+  deselect();
+}
 
  function deleteEntry() {
    if(selectedDayNum && schedule[selectedDayNum] && confirm("Удалить тренировку?")) { delete schedule[selectedDayNum]; saveDataToStorage(); deselect(); }
