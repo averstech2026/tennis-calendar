@@ -557,109 +557,38 @@
    document.getElementById('scheduleModal').style.display = 'flex';
  }
 
- function exportToPDF() {
-  const modal = document.getElementById('scheduleModal');
+function exportToPDF() {
   const modalContent = document.getElementById('pdfContent');
   const monthIdx = document.getElementById('monthSelect').value;
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  
+  // Подготовка параметров
+  const opt = {
+    margin: [10, 10, 10, 10],
+    filename: `Tennis_Schedule_${monthNamesGenitive[monthIdx]}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { 
+      scale: 3, // Увеличиваем четкость
+      useCORS: true,
+      logging: false,
+      // Ключевой момент: скрываем лишнее в клоне документа
+      onclone: (clonedDoc) => {
+        const btn = clonedDoc.querySelector('.btn-pdf');
+        const close = clonedDoc.querySelector('.close-modal');
+        if (btn) btn.style.display = 'none';
+        if (close) close.style.display = 'none';
+        
+        // Для десктопа: убираем тени и фиксированную высоту, чтобы PDF не обрезался
+        const content = clonedDoc.getElementById('pdfContent');
+        content.style.maxHeight = 'none';
+        content.style.boxShadow = 'none';
+        content.style.width = '100%';
+      }
+    },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
 
-  if (isMobile) {
-    const footer = modalContent.querySelector('.modal-footer-sticky');
-    const body = modalContent.querySelector('.modal-body');
-    const hideElements = modalContent.querySelectorAll('.close-modal, .btn-pdf');
-    
-    hideElements.forEach(el => el.style.opacity = '0');
-
-    const originalModalStyle = modalContent.getAttribute('style') || '';
-    const originalFooterStyle = footer.getAttribute('style') || '';
-    const originalBodyStyle = body.getAttribute('style') || '';
-    const originalModalDisplay = modal.style.backdropFilter;
-
-    modal.style.backdropFilter = 'none';
-    modalContent.style.width = '400px';
-    modalContent.style.height = 'auto';
-    modalContent.style.maxHeight = 'none';
-    modalContent.style.display = 'block';
-    modalContent.style.overflow = 'visible';
-    modalContent.style.boxShadow = 'none';
-
-    body.style.overflow = 'visible';
-    body.style.height = 'auto';
-    body.style.maxHeight = 'none';
-
-    footer.style.position = 'relative'; 
-    footer.style.marginTop = '20px';
-
-    const opt = {
-      margin: [15, 0, 15, 0],
-      filename: `Tennis_Schedule_${monthNamesGenitive[monthIdx]}.pdf`,
-      image: { type: 'jpeg', quality: 1 },
-      html2canvas: { 
-        scale: 2, useCORS: true, logging: false, width: 400, windowWidth: 400,
-        scrollY: -window.scrollY,
-        onclone: (clonedDoc) => {
-          const clonedBtn = clonedDoc.querySelector('.btn-pdf');
-          if(clonedBtn) clonedBtn.style.display = 'none';
-        }
-      },
-      jsPDF: { unit: 'px', format: [400, modalContent.offsetHeight + 100], hotfixes: ['px_scaling'] }
-    };
-
-    html2pdf().set(opt).from(modalContent).save().then(() => {
-      modalContent.setAttribute('style', originalModalStyle);
-      footer.setAttribute('style', originalFooterStyle);
-      body.setAttribute('style', originalBodyStyle);
-      modal.style.backdropFilter = originalModalDisplay;
-      hideElements.forEach(el => el.style.opacity = '1');
-    });
-
-  } else {
-    const iframe = document.createElement('iframe');
-    iframe.style.position = 'fixed';
-    iframe.style.right = '100%';
-    iframe.style.bottom = '100%';
-    iframe.style.width = '450px';
-    document.body.appendChild(iframe);
-
-    const doc = iframe.contentWindow.document;
-    const contentHtml = modalContent.innerHTML;
-
-    doc.open();
-    doc.write(`
-      <html>
-        <head>
-          <style>
-            body { font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; background: white; color: #333; width: 400px; }
-            .close-modal, .btn-pdf { display: none !important; }
-            .modal-header h3 { color: #1e293b; font-size: 18px; margin-bottom: 20px; text-align: center; }
-            .schedule-item { border-bottom: 1px solid #f1f5f9; padding: 12px 0; display: block; clear: both; }
-            .sch-date { font-weight: 800; color: #10b981; font-size: 13px; }
-            .sch-loc { color: #64748b; font-size: 12px; }
-            .sch-cost-detail { font-size: 14px; font-weight: 900; color: #0f172a; float: right; }
-            .sch-guest-money { color: #ef4444; font-weight: 800; margin-top: 4px; font-size: 11px; }
-            .modal-footer-sticky { margin-top: 30px; border-top: 2px solid #f1f5f9; padding-top: 20px; }
-            .summary-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
-            .summary-val { font-weight: 900; color: #0f172a; }
-          </style>
-        </head>
-        <body>${contentHtml}</body>
-      </html>
-    `);
-    doc.close();
-
-    setTimeout(() => {
-      const opt = {
-        margin: 10,
-        filename: `Tennis_Schedule_${monthNamesGenitive[monthIdx]}.pdf`,
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
-
-      html2pdf().set(opt).from(doc.body).save().then(() => {
-        document.body.removeChild(iframe);
-      });
-    }, 500);
-  }
+  // Запуск генерации
+  html2pdf().set(opt).from(modalContent).save();
 }
  
  function closeSchedule() { document.getElementById('scheduleModal').style.display = 'none'; }
