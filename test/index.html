@@ -3,8 +3,29 @@
 <head>
  <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
- <title>Теннисный Календарь Pro (TEST)</title>
+ <title>Теннисный Календарь Pro</title>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
+<!-- Подключение Firebase (Compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+<!-- Подключение html2pdf -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<script>
+  // НОВЫЕ КЛЮЧИ ДЛЯ ТЕСТОВОГО ПРОЕКТА
+  const firebaseConfig = {
+    apiKey: "AIzaSyC3zFctsh0cDOSfUitTBlBs-RMsN5lm7Xg",
+    authDomain: "tennis-test-3c9e3.firebaseapp.com",
+    databaseURL: "https://tennis-test-3c9e3-default-rtdb.europe-west1.firebasedatabase.app/",
+    projectId: "tennis-test-3c9e3",
+    storageBucket: "tennis-test-3c9e3.firebasestorage.app",
+    messagingSenderId: "442862555231",
+    appId: "1:442862555231:web:05e0e7794e2b575eabcbea",
+    measurementId: "G-VCJWXE9S17"
+  };
  <style>
    body { font-family: 'Segoe UI', sans-serif; background: #f4f7f9; padding: 10px; margin: 0; color: #333; -webkit-tap-highlight-color: transparent; }
    .container { max-width: 420px; margin: auto; background: white; padding: 15px; border-radius: 28px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); min-height: 550px; width: 100%; box-sizing: border-box; padding-top: 25px;}
@@ -36,7 +57,11 @@
    .cell-price { font-size: 8px; font-weight: bold; }
 
    .editor-panel { background: #f8fafc; border-radius: 20px; padding: 15px; border: 1px solid #edf2f7; display: none; margin-bottom: 20px; }
+   
+   /* Изменено: сетка верхней строки локация + цена */
    .location-row { display: grid; grid-template-columns: 1fr 0.6fr auto; gap: 8px; align-items: flex-end; margin-bottom: 12px; }
+  
+   /* Изменено: сетка нижней строки часы + начало + гость */
    .editor-grid-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 15px; align-items: flex-end; }
    
    .stepper-container { display: flex; flex-direction: column; }
@@ -104,7 +129,7 @@
 
 <div class="container" onclick="event.stopPropagation()">
 <h1 style="text-align: center; color: #1a237e; font-size: 16px; margin: 0 0 15px 0; font-weight: 700; letter-spacing: 0.5px;">
-  Расписание тренировок с ТА (ТЕСТ)
+  Расписание тренировок с ТА
 </h1>
  <div class="header">
    <select id="monthSelect" onchange="initMonth()">
@@ -122,6 +147,7 @@
  <div class="calendar" id="calendar">Загрузка...</div>
 
  <div class="editor-panel" id="editorPanel">
+   <!-- Первая строка: Локация + Цена + Скрыть -->
    <div class="location-row">
      <div style="display: flex; flex-direction: column;">
        <span class="stepper-label">Локация</span>
@@ -145,6 +171,7 @@
      <button class="btn-hide-editor" onclick="deselect()">▾</button>
    </div>
   
+   <!-- Вторая строка: Часы + Начало + Гость -->
    <div class="editor-grid-row">
      <div class="stepper-container">
        <span class="stepper-label">Часы</span>
@@ -214,299 +241,371 @@
  </div>
 </div>
 
-<!-- Подключение Firebase (Compat) -->
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-<!-- Подключение html2pdf -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
 <script>
-  // НОВЫЕ КЛЮЧИ ДЛЯ ТЕСТОВОГО ПРОЕКТА
-  const firebaseConfig = {
-    apiKey: "AIzaSyC3zFctsh0cDOSfUitTBlBs-RMsN5lm7Xg",
-    authDomain: "tennis-test-3c9e3.firebaseapp.com",
-    databaseURL: "https://tennis-test-3c9e3-default-rtdb.europe-west1.firebasedatabase.app/",
-    projectId: "tennis-test-3c9e3",
-    storageBucket: "tennis-test-3c9e3.firebasestorage.app",
-    messagingSenderId: "442862555231",
-    appId: "1:442862555231:web:05e0e7794e2b575eabcbea",
-    measurementId: "G-VCJWXE9S17"
-  };
+ let selectedDayNum = null;
+ let schedule = {};
+ let lastUsedByWeekday = {};
+ const monthNamesGenitive = ["январе", "феврале", "марте", "апреле", "мае", "июне", "июле", "августе", "сентябре", "октябре", "ноября", "декабре"];
+ const monthNamesSchedule = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
+ const locationPrices = { "дутик грунт": 2200, "тенн.центр": 2700, "улица грунт": 1500, "дутик хард": 2500 };
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
+ function updateDefaultPrice() {
+   const loc = document.getElementById('locationSelect').value;
+   const customInput = document.getElementById('customLocation');
+   if (loc === "другое") { customInput.style.display = 'block'; } 
+   else { customInput.style.display = 'none'; if(locationPrices[loc]) document.getElementById('priceInput').value = locationPrices[loc]; }
+ }
 
-  let selectedDayNum = null;
-  let schedule = {};
-  let lastUsedByWeekday = {};
-  const monthNamesGenitive = ["январе", "феврале", "марте", "апреле", "мае", "июне", "июле", "августе", "сентябре", "октябре", "ноября", "декабре"];
-  const monthNamesSchedule = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
-  const locationPrices = { "дутик грунт": 2200, "тенн.центр": 2700, "улица грунт": 1500, "дутик хард": 2500 };
+ function changeTime(step) {
+   const input = document.getElementById('timeInput');
+   let [h, m] = input.value.split(':').map(Number);
+   let total = h * 60 + m + step;
+   if (total < 0) total += 1440; if (total >= 1440) total -= 1440;
+   input.value = `${Math.floor(total/60).toString().padStart(2,'0')}:${(total%60).toString().padStart(2,'0')}`;
+ }
 
-  function updateDefaultPrice() {
-    const loc = document.getElementById('locationSelect').value;
-    const customInput = document.getElementById('customLocation');
-    if (loc === "другое") { customInput.style.display = 'block'; } 
-    else { customInput.style.display = 'none'; if(locationPrices[loc]) document.getElementById('priceInput').value = locationPrices[loc]; }
-  }
+ function getShortLoc(full) {
+   if(!full) return ''; const l = full.toLowerCase();
+   if (l.includes('дутик грунт')) return 'дг'; if (l.includes('центр')) return 'тц';
+   if (l.includes('улица')) return 'уг'; if (l.includes('хард')) return 'дх'; return full.substring(0,3);
+ }
 
-  function changeTime(step) {
-    const input = document.getElementById('timeInput');
-    let [h, m] = input.value.split(':').map(Number);
-    let total = h * 60 + m + step;
-    if (total < 0) total += 1440; if (total >= 1440) total -= 1440;
-    input.value = `${Math.floor(total/60).toString().padStart(2,'0')}:${(total%60).toString().padStart(2,'0')}`;
-  }
-
-  function getShortLoc(full) {
-    if(!full) return ''; const l = full.toLowerCase();
-    if (l.includes('дутик грунт')) return 'дг'; if (l.includes('центр')) return 'тц';
-    if (l.includes('улица')) return 'уг'; if (l.includes('хард')) return 'дх'; return full.substring(0,3);
-  }
-
-  function loadData() {
-    const monthIdx = document.getElementById('monthSelect').value;
-    db.ref('tennis/' + monthIdx).once('value').then((snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        schedule = data.schedule || {};
-        document.getElementById('playerCount').value = data.players || 2;
-      } else {
-        schedule = {};
-        document.getElementById('playerCount').value = 2;
-      }
-      renderCalendar();
-    }).catch((error) => {
-      console.error("Ошибка загрузки:", error);
-      renderCalendar();
-    });
-  }
-
-  function saveDataToStorage() {
-    const monthIdx = document.getElementById('monthSelect').value;
-    const players = document.getElementById('playerCount').value;
-    db.ref('tennis/' + monthIdx).set({
-      schedule: schedule,
-      players: players
-    }).then(() => {
-      console.log("Данные сохранены в ТЕСТОВУЮ базу");
-    }).catch((error) => {
-      alert("Ошибка сохранения: " + error.message);
-    });
-  }
-
-  function initMonth() { deselect(); loadData(); }
-  function deselect() {
-    selectedDayNum = null; document.getElementById('editorPanel').style.display = 'none';
-    document.querySelectorAll('.date-cell').forEach(c => c.classList.remove('batch-preview'));
-    renderCalendar();
-  }
-
-  function renderCalendar() {
-    const cal = document.getElementById('calendar'); cal.innerHTML = '';
-    ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].forEach(d => cal.innerHTML += `<div class="day-name">${d}</div>`);
-    const monthIdx = parseInt(document.getElementById('monthSelect').value);
-    const firstDay = new Date(2026, monthIdx, 1).getDay();
-    let offset = (firstDay === 0) ? 6 : firstDay - 1;
-    for(let i=0; i<offset; i++) cal.innerHTML += '<div></div>';
-    const daysInMonth = new Date(2026, monthIdx + 1, 0).getDate();
-    for(let d=1; d<=daysInMonth; d++) {
-      let classes = ['date-cell']; let details = '';
-      if(schedule[d]) {
-        classes.push('saved'); if(schedule[d].guests > 0) classes.push('has-guest');
-        let loc = getShortLoc(schedule[d].location);
-        details = `<div class="cell-info-row"><span class="cell-time-tag">${schedule[d].time || '19:00'}</span><span class="cell-loc-tag">${loc}</span></div><div class="cell-price">${Math.round(schedule[d].hours*schedule[d].price)}</div>`;
-      }
-      if(d === selectedDayNum) classes.push('active');
-      cal.innerHTML += `<div class="${classes.join(' ')}" onclick="event.stopPropagation(); selectDay(${d})"><span class="cell-day-num">${d}</span>${details}</div>`;
-    }
-    updateTotal();
-  }
-
-  function selectDay(day) {
-    selectedDayNum = day; const monthIdx = parseInt(document.getElementById('monthSelect').value);
-    const dateObj = new Date(2026, monthIdx, day); const weekday = dateObj.getDay();
-    const dayShort = dateObj.toLocaleDateString('ru-RU', {weekday:'short'});
-    document.getElementById('editorPanel').style.display = 'block';
-    document.getElementById('batchLabel').innerText = `+ Все ${dayShort}`;
-    document.getElementById('batchCheck').checked = false; document.getElementById('batchWrap').classList.remove('active');
-
-    if(schedule[day]) {
-      document.getElementById('priceInput').value = schedule[day].price;
-      document.getElementById('hoursInput').value = schedule[day].hours;
-      document.getElementById('timeInput').value = schedule[day].time || "19:00";
-      document.getElementById('guestInput').value = schedule[day].guests || 0;
-      const loc = schedule[day].location;
-      if(locationPrices[loc]) { document.getElementById('locationSelect').value = loc; document.getElementById('customLocation').style.display = 'none'; } 
-      else { document.getElementById('locationSelect').value = 'другое'; document.getElementById('customLocation').value = loc; document.getElementById('customLocation').style.display = 'block'; }
-      document.getElementById('saveBtn').innerText = "Обновить"; document.getElementById('saveBtn').classList.add('update-mode');
-      document.getElementById('batchWrap').style.display = 'none'; document.getElementById('deleteBtn').style.display = 'flex';
+ // Загрузка данных из Firebase
+function loadData() {
+  const monthIdx = document.getElementById('monthSelect').value;
+  
+  db.ref('tennis/' + monthIdx).once('value').then((snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+      schedule = data.schedule || {};
+      document.getElementById('playerCount').value = data.players || 2;
     } else {
-      document.getElementById('saveBtn').innerText = "Сохранить"; document.getElementById('saveBtn').classList.remove('update-mode');
-      document.getElementById('batchWrap').style.display = 'flex'; document.getElementById('deleteBtn').style.display = 'none';
-      if(lastUsedByWeekday[weekday]) {
-        const last = lastUsedByWeekday[weekday];
-        document.getElementById('priceInput').value = last.price; document.getElementById('hoursInput').value = last.hours;
-        document.getElementById('timeInput').value = last.time; document.getElementById('locationSelect').value = locationPrices[last.location] ? last.location : 'другое';
-      }
-      document.getElementById('guestInput').value = 0;
+      schedule = {};
+      document.getElementById('playerCount').value = 2;
     }
     renderCalendar();
-  }
+  }).catch((error) => {
+    console.error("Ошибка загрузки:", error);
+    renderCalendar();
+  });
+}
 
-  function toggleBatchPreview() {
-    const isChecked = document.getElementById('batchCheck').checked;
-    document.querySelectorAll('.date-cell').forEach(c => c.classList.remove('batch-preview'));
-    if (isChecked && selectedDayNum) {
-      const monthIdx = parseInt(document.getElementById('monthSelect').value);
-      const targetWeekday = new Date(2026, monthIdx, selectedDayNum).getDay();
-      document.querySelectorAll('.date-cell').forEach(cell => {
-        const dayNumEl = cell.querySelector('.cell-day-num');
-        if (dayNumEl) {
-          const d = parseInt(dayNumEl.innerText);
-          if (new Date(2026, monthIdx, d).getDay() === targetWeekday && d !== selectedDayNum && !schedule[d]) cell.classList.add('batch-preview');
-        }
-      });
-    }
-  }
+ // Сохранение данных в Firebase
+function saveDataToStorage() {
+  const monthIdx = document.getElementById('monthSelect').value;
+  const players = document.getElementById('playerCount').value;
+  
+  db.ref('tennis/' + monthIdx).set({
+    schedule: schedule,
+    players: players
+  }).then(() => {
+    console.log("Данные успешно сохранены в облако!");
+  }).catch((error) => {
+    alert("Ошибка сохранения: " + error.message);
+  });
+}
 
-  function saveData() {
-    const price = parseFloat(document.getElementById('priceInput').value);
-    const hours = parseFloat(document.getElementById('hoursInput').value);
-    const time = document.getElementById('timeInput').value;
-    const locSel = document.getElementById('locationSelect').value;
-    const location = locSel === 'другое' ? (document.getElementById('customLocation').value || 'другое') : locSel;
-    const guests = parseInt(document.getElementById('guestInput').value) || 0;
-    const monthIdx = parseInt(document.getElementById('monthSelect').value);
-    const targetWeekday = new Date(2026, monthIdx, selectedDayNum).getDay();
+ // Инициализация при смене месяца
+function initMonth() { 
+  deselect();
+  loadData(); 
+}
+
+ function deselect() {
+   selectedDayNum = null; document.getElementById('editorPanel').style.display = 'none';
+   document.querySelectorAll('.date-cell').forEach(c => c.classList.remove('batch-preview'));
+   renderCalendar();
+ }
+
+ function renderCalendar() {
+   const cal = document.getElementById('calendar'); cal.innerHTML = '';
+   ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].forEach(d => cal.innerHTML += `<div class="day-name">${d}</div>`);
+   const monthIdx = parseInt(document.getElementById('monthSelect').value);
+   const firstDay = new Date(2026, monthIdx, 1).getDay();
+   let offset = (firstDay === 0) ? 6 : firstDay - 1;
+   for(let i=0; i<offset; i++) cal.innerHTML += '<div></div>';
+   const daysInMonth = new Date(2026, monthIdx + 1, 0).getDate();
+   for(let d=1; d<=daysInMonth; d++) {
+     let classes = ['date-cell']; let details = '';
+     if(schedule[d]) {
+       classes.push('saved'); if(schedule[d].guests > 0) classes.push('has-guest');
+       let loc = getShortLoc(schedule[d].location);
+       details = `<div class="cell-info-row"><span class="cell-time-tag">${schedule[d].time || '19:00'}</span><span class="cell-loc-tag">${loc}</span></div><div class="cell-price">${Math.round(schedule[d].hours*schedule[d].price)}</div>`;
+     }
+     if(d === selectedDayNum) classes.push('active');
+     cal.innerHTML += `<div class="${classes.join(' ')}" onclick="event.stopPropagation(); selectDay(${d})"><span class="cell-day-num">${d}</span>${details}</div>`;
+   }
+   updateTotal();
+ }
+
+ function selectDay(day) {
+   selectedDayNum = day; const monthIdx = parseInt(document.getElementById('monthSelect').value);
+   const dateObj = new Date(2026, monthIdx, day); const weekday = dateObj.getDay();
+   const dayShort = dateObj.toLocaleDateString('ru-RU', {weekday:'short'});
+   document.getElementById('editorPanel').style.display = 'block';
+   document.getElementById('batchLabel').innerText = `+ Все ${dayShort}`;
+   document.getElementById('batchCheck').checked = false; document.getElementById('batchWrap').classList.remove('active');
+
+   if(schedule[day]) {
+     document.getElementById('priceInput').value = schedule[day].price;
+     document.getElementById('hoursInput').value = schedule[day].hours;
+     document.getElementById('timeInput').value = schedule[day].time || "19:00";
+     document.getElementById('guestInput').value = schedule[day].guests || 0;
+     const loc = schedule[day].location;
+     if(locationPrices[loc]) { document.getElementById('locationSelect').value = loc; document.getElementById('customLocation').style.display = 'none'; } 
+     else { document.getElementById('locationSelect').value = 'другое'; document.getElementById('customLocation').value = loc; document.getElementById('customLocation').style.display = 'block'; }
+     document.getElementById('saveBtn').innerText = "Обновить"; document.getElementById('saveBtn').classList.add('update-mode');
+     document.getElementById('batchWrap').style.display = 'none'; document.getElementById('deleteBtn').style.display = 'flex';
+   } else {
+     document.getElementById('saveBtn').innerText = "Сохранить"; document.getElementById('saveBtn').classList.remove('update-mode');
+     document.getElementById('batchWrap').style.display = 'flex'; document.getElementById('deleteBtn').style.display = 'none';
+     if(lastUsedByWeekday[weekday]) {
+       const last = lastUsedByWeekday[weekday];
+       document.getElementById('priceInput').value = last.price; document.getElementById('hoursInput').value = last.hours;
+       document.getElementById('timeInput').value = last.time; document.getElementById('locationSelect').value = locationPrices[last.location] ? last.location : 'другое';
+     }
+     document.getElementById('guestInput').value = 0;
+   }
+   renderCalendar();
+ }
+
+ function toggleBatchPreview() {
+   const isChecked = document.getElementById('batchCheck').checked;
+   document.querySelectorAll('.date-cell').forEach(c => c.classList.remove('batch-preview'));
+   if (isChecked && selectedDayNum) {
+     const monthIdx = parseInt(document.getElementById('monthSelect').value);
+     const targetWeekday = new Date(2026, monthIdx, selectedDayNum).getDay();
+     document.querySelectorAll('.date-cell').forEach(cell => {
+       const dayNumEl = cell.querySelector('.cell-day-num');
+       if (dayNumEl) {
+         const d = parseInt(dayNumEl.innerText);
+         if (new Date(2026, monthIdx, d).getDay() === targetWeekday && d !== selectedDayNum && !schedule[d]) cell.classList.add('batch-preview');
+       }
+     });
+   }
+ }
+
+ function saveData() {
+   const price = parseFloat(document.getElementById('priceInput').value);
+   const hours = parseFloat(document.getElementById('hoursInput').value);
+   const time = document.getElementById('timeInput').value;
+   const locSel = document.getElementById('locationSelect').value;
+   const location = locSel === 'другое' ? (document.getElementById('customLocation').value || 'другое') : locSel;
+   const guests = parseInt(document.getElementById('guestInput').value) || 0;
+   const monthIdx = parseInt(document.getElementById('monthSelect').value);
+   const targetWeekday = new Date(2026, monthIdx, selectedDayNum).getDay();
+   
+   lastUsedByWeekday[targetWeekday] = { price, hours, location, time };
+   if(document.getElementById('batchCheck').checked) {
+     const daysInMonth = new Date(2026, monthIdx + 1, 0).getDate();
+     for(let d=1; d<=daysInMonth; d++) {
+       if(new Date(2026, monthIdx, d).getDay() === targetWeekday) {
+         if(!schedule[d] || d === selectedDayNum) schedule[d] = { price, hours, location, time, guests: (d === selectedDayNum ? guests : 0) };
+       }
+     }
+   } else { schedule[selectedDayNum] = { price, hours, location, time, guests }; }
+   saveDataToStorage(); deselect();
+ }
+
+ function deleteEntry() {
+   if(selectedDayNum && schedule[selectedDayNum] && confirm("Удалить тренировку?")) { delete schedule[selectedDayNum]; saveDataToStorage(); deselect(); }
+ }
+
+ function updateTotal() {
+   let myTotal = 0, fullTotal = 0, totalGuestIncome = 0;
+   const entries = Object.values(schedule);
+   const totalSessions = entries.length;
+   const monthIdx = parseInt(document.getElementById('monthSelect').value);
+   const basePlayers = parseInt(document.getElementById('playerCount').value) || 1;
+   
+   entries.forEach(item => {
+     const cost = item.price * item.hours; fullTotal += cost;
+     const share = cost / (basePlayers + (item.guests || 0)); myTotal += share;
+     if(item.guests > 0) totalGuestIncome += (share * item.guests);
+   });
+
+   document.getElementById('mainTotalLabel').innerText = `В ${monthNamesGenitive[monthIdx]} за ${totalSessions} тр.`;
+   document.getElementById('grandTotal').innerText = Math.round(fullTotal).toLocaleString() + ' ₽';
+   document.getElementById('perPlayerTotal').innerText = Math.round(myTotal).toLocaleString() + ' ₽';
+   
+   const guestBox = document.getElementById('mainGuestSummary');
+   let dailyInfo = '';
+   if (selectedDayNum && schedule[selectedDayNum] && schedule[selectedDayNum].guests > 0) {
+     const day = schedule[selectedDayNum]; const dCost = day.price * day.hours;
+     const dShare = dCost / (basePlayers + day.guests); const dSaving = Math.round((dShare * day.guests) / basePlayers);
+     dailyInfo = `<div style="margin-top:8px; padding-top:8px; border-top:1px dashed #ffecb3; color:#b45309; text-align:center;">✨ Экономия за сегодня: <b>+${dSaving.toLocaleString()} ₽</b></div>`;
+   }
+   if(totalGuestIncome > 0 || dailyInfo !== '') {
+     guestBox.style.display = 'block';
+     let html = totalGuestIncome > 0 ? `<div style="text-align:center;">💰 <b>Гости принесли (мес): ${Math.round(totalGuestIncome).toLocaleString()} ₽</b><br><span style="color:#64748b; font-size:11px;">Экономия каждого: по ${Math.round(totalGuestIncome/basePlayers).toLocaleString()} ₽</span></div>` : '';
+     guestBox.innerHTML = html + dailyInfo;
+   } else { guestBox.style.display = 'none'; }
+ }
+
+ function changeVal(id, step) {
+   const el = document.getElementById(id); let val = parseFloat(el.value) + step;
+   if(id === 'playerCount') { el.value = Math.max(1, val); updateTotal(); saveDataToStorage(); }
+   else if(id === 'guestInput') el.value = Math.max(0, val);
+   else el.value = (id === 'hoursInput') ? Math.max(0.5, val) : Math.max(0, val);
+ }
+
+function showSchedule() {
+  const list = document.getElementById('scheduleList'); list.innerHTML = '';
+  const monthIdx = parseInt(document.getElementById('monthSelect').value);
+  const basePlayers = parseInt(document.getElementById('playerCount').value) || 1;
+  const sortedKeys = Object.keys(schedule).sort((a,b)=>a-b);
+  const totalSessions = sortedKeys.length;
+  
+  document.getElementById('modalTitle').innerText = `График тренировок в ${monthNamesGenitive[monthIdx]}`;
+  
+  let myTotal = 0, fullCost = 0;
+  sortedKeys.forEach((d, index) => {
+    const item = schedule[d]; 
+    const date = new Date(2026, monthIdx, d);
+    const dayName = date.toLocaleDateString('ru-RU', {weekday:'long'});
+    const cost = item.hours * item.price; 
+    const share = cost / (basePlayers + item.guests);
+    myTotal += share; fullCost += cost;
+
+    const isLast = index === sortedKeys.length - 1;
+    const borderStyle = isLast ? 'border-bottom: none;' : 'border-bottom: 1px solid #f1f5f9;';
+
+    let gInfo = item.guests > 0 ? `<div class="sch-guest-money">👤 Гости: +${item.guests} (С гостя: ${Math.round(share)} ₽)</div><div class="sch-saving">экономия напарникам: по ${Math.round((share*item.guests)/basePlayers)} ₽</div>` : '';
     
-    lastUsedByWeekday[targetWeekday] = { price, hours, location, time };
-    if(document.getElementById('batchCheck').checked) {
-      const daysInMonth = new Date(2026, monthIdx + 1, 0).getDate();
-      for(let d=1; d<=daysInMonth; d++) {
-        if(new Date(2026, monthIdx, d).getDay() === targetWeekday) {
-          if(!schedule[d] || d === selectedDayNum) schedule[d] = { price, hours, location, time, guests: (d === selectedDayNum ? guests : 0) };
-        }
-      }
-    } else { schedule[selectedDayNum] = { price, hours, location, time, guests }; }
-    saveDataToStorage(); deselect();
-  }
-
-  function deleteEntry() {
-    if(selectedDayNum && schedule[selectedDayNum] && confirm("Удалить тренировку?")) { delete schedule[selectedDayNum]; saveDataToStorage(); deselect(); }
-  }
-
-  function fullReset() {
-    if(confirm("Очистить все данные за этот месяц?")) { schedule = {}; saveDataToStorage(); renderCalendar(); }
-  }
-
-  function updateTotal() {
-    let myTotal = 0, fullTotal = 0, totalGuestIncome = 0;
-    const entries = Object.values(schedule);
-    const totalSessions = entries.length;
-    const monthIdx = parseInt(document.getElementById('monthSelect').value);
-    const basePlayers = parseInt(document.getElementById('playerCount').value) || 1;
-    
-    entries.forEach(item => {
-      const cost = item.price * item.hours; fullTotal += cost;
-      const share = cost / (basePlayers + (item.guests || 0)); myTotal += share;
-      if(item.guests > 0) totalGuestIncome += (share * item.guests);
-    });
-
-    document.getElementById('mainTotalLabel').innerText = `В ${monthNamesGenitive[monthIdx]} за ${totalSessions} тр.`;
-    document.getElementById('grandTotal').innerText = Math.round(fullTotal).toLocaleString() + ' ₽';
-    document.getElementById('perPlayerTotal').innerText = Math.round(myTotal).toLocaleString() + ' ₽';
-    
-    const guestBox = document.getElementById('mainGuestSummary');
-    let dailyInfo = '';
-    if (selectedDayNum && schedule[selectedDayNum] && schedule[selectedDayNum].guests > 0) {
-      const day = schedule[selectedDayNum]; const dCost = day.price * day.hours;
-      const dShare = dCost / (basePlayers + day.guests); const dSaving = Math.round((dShare * day.guests) / basePlayers);
-      dailyInfo = `<div style="margin-top:8px; padding-top:8px; border-top:1px dashed #ffecb3; color:#b45309; text-align:center;">✨ Экономия за сегодня: <b>+${dSaving.toLocaleString()} ₽</b></div>`;
-    }
-    if(totalGuestIncome > 0 || dailyInfo !== '') {
-      guestBox.style.display = 'block';
-      let html = totalGuestIncome > 0 ? `<div style="text-align:center;">💰 <b>Гости принесли (мес): ${Math.round(totalGuestIncome).toLocaleString()} ₽</b><br><span style="color:#64748b; font-size:11px;">Экономия каждого: по ${Math.round(totalGuestIncome/basePlayers).toLocaleString()} ₽</span></div>` : '';
-      guestBox.innerHTML = html + dailyInfo;
-    } else { guestBox.style.display = 'none'; }
-  }
-
-  function changeVal(id, step) {
-    const el = document.getElementById(id); let val = parseFloat(el.value) + step;
-    if(id === 'playerCount') { el.value = Math.max(1, val); updateTotal(); saveDataToStorage(); }
-    else if(id === 'guestInput') el.value = Math.max(0, val);
-    else el.value = (id === 'hoursInput') ? Math.max(0.5, val) : Math.max(0, val);
-  }
-
-  function showSchedule() {
-    const list = document.getElementById('scheduleList'); list.innerHTML = '';
-    const monthIdx = parseInt(document.getElementById('monthSelect').value);
-    const basePlayers = parseInt(document.getElementById('playerCount').value) || 1;
-    const sortedKeys = Object.keys(schedule).sort((a,b)=>a-b);
-    const totalSessions = sortedKeys.length;
-    
-    document.getElementById('modalTitle').innerText = `График тренировок в ${monthNamesGenitive[monthIdx]}`;
-    
-    let myTotal = 0, fullCost = 0;
-    sortedKeys.forEach((d, index) => {
-      const item = schedule[d]; 
-      const date = new Date(2026, monthIdx, d);
-      const dayName = date.toLocaleDateString('ru-RU', {weekday:'long'});
-      const cost = item.hours * item.price; 
-      const share = cost / (basePlayers + item.guests);
-      myTotal += share; fullCost += cost;
-
-      const isLast = index === sortedKeys.length - 1;
-      const borderStyle = isLast ? 'border-bottom: none;' : 'border-bottom: 1px solid #f1f5f9;';
-
-      let gInfo = item.guests > 0 ? `<div class="sch-guest-money">👤 Гости: +${item.guests} (С гостя: ${Math.round(share)} ₽)</div><div class="sch-saving">экономия напарникам: по ${Math.round((share*item.guests)/basePlayers)} ₽</div>` : '';
-      
-      list.innerHTML += `
-        <div class="schedule-item" style="${borderStyle} padding: 12px 0;">
-          <div class="sch-date">${d} ${monthNamesSchedule[monthIdx]}, ${dayName} — ${item.time}</div>
-          <div class="sch-loc">
-            <span class="sch-cost-detail">${Math.round(cost).toLocaleString()} ₽</span>
-            ${item.location} • ${item.price}₽/ч • ${item.hours}ч
-          </div>
-          ${gInfo}
-        </div>`;
-    });
-    
-    document.getElementById('summaryBlock').innerHTML = `
-      <div style="margin-top: 15px; border-top: 2px solid #f1f5f9; padding-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-        <div style="display: flex; flex-direction: column; align-items: center;">
-          <span style="font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: 800; text-align: center;">В ${monthNamesGenitive[monthIdx]} за ${totalSessions} тр.</span>
-          <span style="font-size: 20px; font-weight: 800; color: #1e293b;">${Math.round(fullCost).toLocaleString()} ₽</span>
+    list.innerHTML += `
+      <div class="schedule-item" style="${borderStyle} padding: 12px 0;">
+        <div class="sch-date">${d} ${monthNamesSchedule[monthIdx]}, ${dayName} — ${item.time}</div>
+        <div class="sch-loc">
+          <span class="sch-cost-detail">${Math.round(cost).toLocaleString()} ₽</span>
+          ${item.location} • ${item.price}₽/ч • ${item.hours}ч
         </div>
-        <div style="display: flex; flex-direction: column; align-items: center;">
-          <span style="font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: 800; text-align: center;">Моя доля</span>
-          <span style="font-size: 20px; font-weight: 800; color: #f59e0b;">${Math.round(myTotal).toLocaleString()} ₽</span>
-        </div>
+        ${gInfo}
       </div>`;
-      
-    document.getElementById('scheduleModal').style.display = 'flex';
-  }
+  });
+  
+  document.getElementById('summaryBlock').innerHTML = `
+    <div style="margin-top: 15px; border-top: 2px solid #f1f5f9; padding-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+      <div style="display: flex; flex-direction: column; align-items: center;">
+        <span style="font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: 800; text-align: center;">В ${monthNamesGenitive[monthIdx]} за ${totalSessions} тр.</span>
+        <span style="font-size: 20px; font-weight: 800; color: #1e293b;">${Math.round(fullCost).toLocaleString()} ₽</span>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: center;">
+        <span style="font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: 800; text-align: center;">Моя доля</span>
+        <span style="font-size: 20px; font-weight: 800; color: #f59e0b;">${Math.round(myTotal).toLocaleString()} ₽</span>
+      </div>
+    </div>`;
+    
+  document.getElementById('scheduleModal').style.display = 'flex';
+}
+function exportToPDF() {
+  const modal = document.getElementById('scheduleModal');
+  const modalContent = document.getElementById('pdfContent');
+  const monthIdx = document.getElementById('monthSelect').value;
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-  function closeSchedule() { document.getElementById('scheduleModal').style.display = 'none'; }
+  if (isMobile) {
+    const footer = modalContent.querySelector('.modal-footer-sticky');
+    const body = modalContent.querySelector('.modal-body');
+    const hideElements = modalContent.querySelectorAll('.close-modal, .btn-pdf');
+    
+    hideElements.forEach(el => el.style.opacity = '0');
 
-  function exportToPDF() {
-    const monthIdx = document.getElementById('monthSelect').value;
-    const element = document.getElementById('pdfContent');
+    const originalModalStyle = modalContent.getAttribute('style') || '';
+    const originalFooterStyle = footer.getAttribute('style') || '';
+    const originalBodyStyle = body.getAttribute('style') || '';
+    const originalModalDisplay = modal.style.backdropFilter;
+
+    modal.style.backdropFilter = 'none';
+    modalContent.style.width = '400px';
+    modalContent.style.height = 'auto';
+    modalContent.style.maxHeight = 'none';
+    modalContent.style.display = 'block';
+    modalContent.style.overflow = 'visible';
+    modalContent.style.boxShadow = 'none';
+
+    body.style.overflow = 'visible';
+    body.style.height = 'auto';
+    body.style.maxHeight = 'none';
+
+    footer.style.position = 'relative'; 
+    footer.style.marginTop = '20px';
+
     const opt = {
-      margin: 10,
-      filename: `Tennis_TEST_Schedule_${monthIdx}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      margin: [15, 0, 15, 0],
+      filename: `Tennis_Schedule_${monthNamesGenitive[monthIdx]}.pdf`,
+      image: { type: 'jpeg', quality: 1 },
+      html2canvas: { 
+        scale: 2, useCORS: true, logging: false, width: 400, windowWidth: 400,
+        scrollY: -window.scrollY,
+        onclone: (clonedDoc) => {
+          const clonedBtn = clonedDoc.querySelector('.btn-pdf');
+          if(clonedBtn) clonedBtn.style.display = 'none';
+        }
+      },
+      jsPDF: { unit: 'px', format: [400, modalContent.offsetHeight + 100], hotfixes: ['px_scaling'] }
     };
-    html2pdf().set(opt).from(element).save();
+
+    html2pdf().set(opt).from(modalContent).save().then(() => {
+      modalContent.setAttribute('style', originalModalStyle);
+      footer.setAttribute('style', originalFooterStyle);
+      body.setAttribute('style', originalBodyStyle);
+      modal.style.backdropFilter = originalModalDisplay;
+      hideElements.forEach(el => el.style.opacity = '1');
+    });
+
+  } else {
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '100%';
+    iframe.style.bottom = '100%';
+    iframe.style.width = '450px';
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow.document;
+    const contentHtml = modalContent.innerHTML;
+
+    doc.open();
+    doc.write(`
+      <html>
+        <head>
+          <style>
+            body { font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; background: white; color: #333; width: 400px; }
+            .close-modal, .btn-pdf { display: none !important; }
+            .modal-header h3 { color: #1e293b; font-size: 18px; margin-bottom: 20px; text-align: center; }
+            .schedule-item { border-bottom: 1px solid #f1f5f9; padding: 12px 0; display: block; clear: both; }
+            .sch-date { font-weight: 800; color: #10b981; font-size: 13px; }
+            .sch-loc { color: #64748b; font-size: 12px; }
+            .sch-cost-detail { font-size: 14px; font-weight: 900; color: #0f172a; float: right; }
+            .sch-guest-money { color: #ef4444; font-weight: 800; margin-top: 4px; font-size: 11px; }
+            .modal-footer-sticky { margin-top: 30px; border-top: 2px solid #f1f5f9; padding-top: 20px; }
+            .summary-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+            .summary-val { font-weight: 900; color: #0f172a; }
+          </style>
+        </head>
+        <body>${contentHtml}</body>
+      </html>
+    `);
+    doc.close();
+
+    setTimeout(() => {
+      const opt = {
+        margin: 10,
+        filename: `Tennis_Schedule_${monthNamesGenitive[monthIdx]}.pdf`,
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(doc.body).save().then(() => {
+        document.body.removeChild(iframe);
+      });
+    }, 500);
   }
+}
+ 
+ function closeSchedule() { document.getElementById('scheduleModal').style.display = 'none'; }
 
-  // Запуск при старте
-  loadData();
+ function fullReset() { if(confirm("Сбросить месяц?")) { schedule = {}; saveDataToStorage(); renderCalendar(); } }
+ initMonth();
 </script>
-
 </body>
 </html>
