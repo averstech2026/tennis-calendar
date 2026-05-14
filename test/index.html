@@ -11,111 +11,58 @@
  <style>
    body { font-family: 'Segoe UI', sans-serif; background: #f4f7f9; padding: 10px; margin: 0; color: #333; -webkit-tap-highlight-color: transparent; }
    .container { max-width: 420px; margin: auto; background: white; padding: 15px; border-radius: 28px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); min-height: 550px; width: 100%; box-sizing: border-box; padding-top: 25px;}
-  
    .header { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; align-items: center; margin-bottom: 15px; }
    #monthSelect { font-size: 14px; font-weight: bold; border: 1px solid #e0e4e8; border-radius: 12px; padding: 8px; color: #1a237e; background: #fff; flex: 1; outline: none; }
-  
    .btn-view-schedule { background: #e8eaf6; color: #1a237e; border: none; padding: 8px 14px; border-radius: 10px; font-size: 11px; font-weight: bold; cursor: pointer; }
    .btn-reset-top { background: #fff1f1; color: #dc2626; border: none; padding: 8px 14px; border-radius: 10px; font-size: 11px; font-weight: bold; cursor: pointer; }
 
-   .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 15px; padding: 0; width: 100%; box-sizing: border-box; }
+   .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 15px; }
    .day-name { text-align: center; font-size: 10px; color: #b0b8c1; font-weight: bold; text-transform: uppercase; padding-bottom: 2px; }
-  
    .date-cell {
-     aspect-ratio: 1 / 0.95; width: 95%; margin: auto; min-height: 42px;
-     display: flex; flex-direction: column; align-items: center; justify-content: center;
+     aspect-ratio: 1 / 0.95; display: flex; flex-direction: column; align-items: center; justify-content: center;
      background: #f8fafc; border-radius: 10px; font-size: 13px; cursor: pointer;
-     transition: 0.2s; border: 2px solid transparent; position: relative; box-sizing: border-box; padding: 2px; overflow: hidden;
+     transition: 0.2s; border: 2px solid transparent; position: relative; box-sizing: border-box;
    }
    .date-cell.active { border-color: #1a237e; background: #eff2ff; }
-   .date-cell.saved { background: #4caf50; color: white; box-shadow: 0 4px 10px rgba(76, 175, 80, 0.2); }
-   .date-cell.has-guest { border: 2px dashed #ff4444; }
-   .date-cell.batch-preview { border-color: #3f51b5; box-shadow: 0 0 8px rgba(63, 81, 181, 0.4); transform: scale(1.02); z-index: 5; }
-  
-   .cell-day-num { font-weight: 700; margin-bottom: 1px; }
-   .cell-info-row { font-size: 8px; margin: 1px 0; color: rgba(255,255,255,0.9); white-space: nowrap; }
-   .cell-time-tag { color: #ccff00 !important; font-weight: 900; font-size: 8px; margin-right: 2px; }
-   .cell-loc-tag { color: #ffeb3b !important; font-weight: 900; text-transform: lowercase; font-size: 8px; }
-   .cell-price { font-size: 8px; font-weight: bold; }
-   .plus-tag { position: absolute; top: 2px; right: 2px; background: #ffd600; color: #000; font-size: 7px; font-weight: 900; padding: 1px 3px; border-radius: 4px; line-height: 1; }
+   .date-cell.saved { background: #1a237e; color: white; }
+   .date-cell.has-guest { border: 2px dashed #ef4444; }
+   .date-cell.batch-preview { border-color: #1a237e; box-shadow: 0 0 8px rgba(26, 35, 126, 0.4); }
+   .cell-day-num { font-weight: 700; }
+   .cell-info-row { font-size: 8px; color: rgba(255,255,255,0.9); }
+   .plus-tag { position: absolute; top: 2px; right: 2px; background: #ffd600; color: #000; font-size: 7px; font-weight: 900; padding: 1px 3px; border-radius: 4px; }
 
    .editor-panel { background: #f8fafc; border-radius: 20px; padding: 15px; border: 1px solid #edf2f7; display: none; margin-bottom: 20px; }
-   
-   .tabs-row { display: flex; gap: 6px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
-   .tab-btn { padding: 6px 12px; border-radius: 10px; border: 1px solid #e2e8f0; background: white; font-size: 11px; font-weight: 800; color: #64748b; white-space: nowrap; cursor: pointer; }
-   .tab-btn.active { background: #1a237e; color: white; border-color: #1a237e; }
+   .tabs-row { display: flex; gap: 6px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 4px; }
+   .tab-btn { padding: 6px 12px; border-radius: 10px; border: 1px solid #e2e8f0; background: white; font-size: 11px; font-weight: 800; color: #64748b; cursor: pointer; white-space: nowrap; }
+   .tab-btn.active { background: #1a237e; color: white; }
    .tab-btn.add-new { background: #f0fdf4; color: #16a34a; border: 1px dashed #16a34a; }
-   .tab-btn.add-new.active { background: #16a34a; color: white; border-style: solid; }
 
-   .location-row { display: grid; grid-template-columns: 1fr 0.6fr auto; gap: 8px; align-items: flex-end; margin-bottom: 12px; }
-   .editor-grid-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 15px; align-items: flex-end; }
-   
+   .location-row { display: grid; grid-template-columns: 1fr 0.6fr auto; gap: 8px; margin-bottom: 12px; }
    .stepper-container { display: flex; flex-direction: column; }
-   .stepper-label { font-size: 8px; color: #8e9aaf; margin-bottom: 4px; text-align: center; font-weight: 800; text-transform: uppercase; white-space: nowrap; }
-   
-   .stepper { 
-     display: flex; align-items: center; background: white; border-radius: 10px; border: 1px solid #e2e8f0; height: 38px; overflow: hidden; 
-     box-sizing: border-box;
-   }
-   .stepper-btn { width: 26px; height: 100%; border: none; background: #f1f5f9; color: #1a237e; font-size: 16px; font-weight: bold; cursor: pointer; padding: 0; }
-   
-   .stepper-input { 
-     flex: 1; border: none; text-align: center !important; font-weight: 800; font-size: 13px; width: 100%; 
-     background: transparent; color: #333; outline: none; padding: 0 !important; margin: 0 !important;
-     appearance: none; -moz-appearance: textfield; line-height: 38px; display: block;
-   }
-   .stepper-input::-webkit-outer-spin-button, .stepper-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+   .stepper-label { font-size: 8px; color: #8e9aaf; margin-bottom: 4px; text-align: center; font-weight: 800; text-transform: uppercase; }
+   .stepper { display: flex; align-items: center; background: white; border-radius: 10px; border: 1px solid #e2e8f0; height: 38px; overflow: hidden; }
+   .stepper-btn { width: 26px; height: 100%; border: none; background: #f1f5f9; color: #1a237e; font-weight: bold; cursor: pointer; }
+   .stepper-input { flex: 1; border: none; text-align: center; font-weight: 800; font-size: 13px; width: 30px; background: transparent; }
 
-   .guest-field .stepper-label { color: #dc2626; }
-   .guest-field .stepper { border-color: #ffecb3; background: #fffcf0; }
-   .guest-field .stepper-input { color: #dc2626; }
-
-   .button-group { display: flex; gap: 10px; align-items: stretch; height: 45px; }
-   .btn-save { flex: 1; background: #1a237e; color: white; border: none; border-radius: 18px; font-weight: 600; font-size: 16px; cursor: pointer; transition: 0.2s; }
-   .btn-save.update-mode { background: #4caf50; }
-   .btn-hide-editor { background: #e2e8f0; color: #1a237e; border: none; width: 45px; height: 40px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; }
-   .btn-delete { background: #fff1f1; color: #dc2626; border: 1px solid #fee2e2; width: 45px; border-radius: 14px; cursor: pointer; font-size: 18px; display: none; align-items: center; justify-content: center; }
-
-   .toggle-container { min-width: 80px; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 18px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px 8px; user-select: none; }
-   .toggle-container input { display: none; }
-   .checkbox-custom { width: 14px; height: 14px; border: 2px solid #cbd5e1; border-radius: 5px; position: relative; background: white; margin-bottom: 2px; }
-   .toggle-label { font-size: 8px; font-weight: 800; color: #64748b; text-transform: uppercase; }
-   .toggle-container.active { background: #e8eaf6; border-color: #1a237e; }
-   .toggle-container.active .checkbox-custom { background: #1a237e; border-color: #1a237e; }
+   .button-group { display: flex; gap: 10px; height: 45px; }
+   .btn-save { flex: 1; background: #1a237e; color: white; border: none; border-radius: 18px; font-weight: 600; cursor: pointer; }
+   .btn-delete { background: #fff1f1; color: #dc2626; border: 1px solid #fee2e2; width: 45px; border-radius: 14px; cursor: pointer; display: none; align-items: center; justify-content: center; }
 
    .total-footer { background: #ffffff; border: 1px solid #f0f4f8; padding: 18px; border-radius: 24px; margin-top: 10px; }
    .total-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; border-top: 1px solid #f1f5f9; padding-top: 15px; }
-   .total-item { display: flex; flex-direction: column; align-items: center; }
-   .total-label { font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: 800; text-align: center; }
    .total-val { font-size: 20px; font-weight: 800; color: #1e293b; }
    .val-highlight { color: #f59e0b; }
-   .guest-summary-box { margin-top: 15px; padding: 12px; background: #fffcf0; border-radius: 16px; border: 1px solid #ffecb3; font-size: 12px; line-height: 1.4; }
+   .guest-summary-box { margin-top: 15px; padding: 12px; background: #fffcf0; border-radius: 16px; border: 1px solid #ffecb3; font-size: 12px; }
 
-   .player-row { margin-bottom: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
-   .player-row .stepper { width: 140px; margin: 0 auto; display: flex; justify-content: center; }
-
-   .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-   .modal-content { background: white; width: 92%; max-width: 400px; border-radius: 24px; max-height: 80vh; overflow-y: auto; display: flex; flex-direction: column; }
-   .modal-header { position: sticky; top: 0; background: white; padding: 15px 20px; z-index: 10; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
-   .modal-body { padding: 0 20px; flex: 1; }
-   .modal-footer-sticky { position: sticky; bottom: 0; background: white; padding: 15px 20px; border-top: 1px solid #f1f5f9; z-index: 10; }
-   .close-modal { font-size: 28px; font-weight: bold; color: #94a3b8; cursor: pointer; }
-   .btn-pdf { background: #1a237e; color: white; border: none; width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 12px; }
-  
-   .schedule-item { border-bottom: 1px solid #f1f5f9; padding: 12px 0; line-height: 1.3; }
-   .sch-date { font-weight: 800; color: #4caf50; text-transform: lowercase; font-size: 13px; margin-bottom: 2px; }
-   .sch-loc { color: #475569; font-size: 12px; }
-   .sch-cost-detail { font-size: 14px; font-weight: 900; color: #1a237e; float: right; }
-   .sch-guest-money { color: #dc2626; font-weight: 800; margin-top: 4px; font-size: 11px; }
-   .sch-saving { color: #64748b; font-size: 10px; font-style: italic; }
+   .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; }
+   .modal-content { background: white; width: 92%; max-width: 400px; border-radius: 24px; max-height: 85vh; overflow-y: auto; }
+   .modal-body { padding: 20px; }
+   .schedule-item { border-bottom: 1px solid #f1f5f9; padding: 12px 0; }
  </style>
 </head>
 <body onclick="deselect()">
 
 <div class="container" onclick="event.stopPropagation()">
-<h1 style="text-align: center; color: #1a237e; font-size: 16px; margin: 0 0 15px 0; font-weight: 700; letter-spacing: 0.5px;">
-  Расписание тренировок с ТА
-</h1>
  <div class="header">
    <select id="monthSelect" onchange="initMonth()">
      <option value="0">Январь 2026</option><option value="1">Февраль 2026</option>
@@ -129,22 +76,20 @@
    <button class="btn-reset-top" onclick="fullReset()">Сброс</button>
  </div>
 
- <div class="calendar" id="calendar">Загрузка...</div>
+ <div class="calendar" id="calendar"></div>
 
  <div class="editor-panel" id="editorPanel">
    <div class="tabs-row" id="tabsRow"></div>
-
    <div class="location-row">
      <div style="display: flex; flex-direction: column;">
        <span class="stepper-label">Локация</span>
-       <select id="locationSelect" onchange="updateDefaultPrice()" style="width:100%; height:40px; border-radius:12px; border:1px solid #e2e8f0; padding:0 10px; outline:none;">
+       <select id="locationSelect" onchange="updatePrice()" style="height:40px; border-radius:12px; border:1px solid #e2e8f0;">
          <option value="дутик грунт">дутик грунт</option>
          <option value="тенн.центр">тенн.центр</option>
          <option value="улица грунт">улица грунт</option>
-         <option value="дутик хард">дутик хард</option>
-         <option value="другое">другое (ввести...)</option>
+         <option value="другое">другое...</option>
        </select>
-       <input type="text" id="customLocation" placeholder="Назовите локацию" style="display:none; width:100%; height:36px; border-radius:10px; border:1px solid #e2e8f0; padding:0 10px; box-sizing: border-box; outline:none; text-align:center; margin-top: 4px;">
+       <input type="text" id="customLocation" placeholder="Название" style="display:none; margin-top:4px; height:30px; border-radius:8px; border:1px solid #e2e8f0;">
      </div>
      <div class="stepper-container">
        <span class="stepper-label">Цена</span>
@@ -154,10 +99,8 @@
          <button class="stepper-btn" onclick="changeVal('priceInput', 100)">+</button>
        </div>
      </div>
-     <button class="btn-hide-editor" onclick="deselect()">▾</button>
    </div>
-  
-   <div class="editor-grid-row">
+   <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 15px;">
      <div class="stepper-container">
        <span class="stepper-label">Часы</span>
        <div class="stepper">
@@ -174,78 +117,60 @@
          <button class="stepper-btn" onclick="changeTime(30)">+</button>
        </div>
      </div>
-     <div class="stepper-container guest-field">
-       <span class="stepper-label">Гость</span>
-       <div class="stepper">
+     <div class="stepper-container">
+       <span class="stepper-label" style="color:#dc2626">Гость</span>
+       <div class="stepper" style="border-color:#ffecb3; background:#fffcf0;">
          <button class="stepper-btn" onclick="changeVal('guestInput', -1)">−</button>
          <input type="number" id="guestInput" class="stepper-input" value="0" readonly>
          <button class="stepper-btn" onclick="changeVal('guestInput', 1)">+</button>
        </div>
      </div>
    </div>
-
    <div class="button-group">
-     <button class="btn-save" id="saveBtn" onclick="saveData()">Сохранить</button>
-     <label class="toggle-container" id="batchWrap">
-       <input type="checkbox" id="batchCheck" onchange="document.getElementById('batchWrap').classList.toggle('active'); toggleBatchPreview()">
-       <div class="checkbox-custom"></div>
-       <span class="toggle-label" id="batchLabel">+ Все субб</span>
-     </label>
+     <button class="btn-save" onclick="saveData()">Сохранить</button>
      <button class="btn-delete" id="deleteBtn" onclick="deleteEntry()">✕</button>
    </div>
  </div>
 
  <div class="total-footer">
-   <div class="player-row">
-     <span class="total-label" style="display: block; margin-bottom: 6px;">Постоянных игроков</span>
-     <div class="stepper">
-       <button class="stepper-btn" onclick="changeVal('playerCount', -1);">-</button>
-       <input type="number" id="playerCount" class="stepper-input" value="2" readonly>
-       <button class="stepper-btn" onclick="changeVal('playerCount', 1);">+</button>
-     </div>
+   <div style="text-align:center; margin-bottom:10px;">
+     <span style="font-size:10px; font-weight:800; color:#94a3b8;">ИГРОКОВ: </span>
+     <input type="number" id="playerCount" value="2" onchange="updateTotal(); saveDataToStorage();" style="width:40px; text-align:center; border-radius:8px; border:1px solid #e2e8f0; font-weight:800;">
    </div>
    <div class="total-grid">
-     <div class="total-item"><span class="total-label" id="mainTotalLabel">Весь месяц</span><span class="total-val" id="grandTotal">0 ₽</span></div>
-     <div class="total-item"><span class="total-label">Моя доля</span><span class="total-val val-highlight" id="perPlayerTotal">0 ₽</span></div>
+     <div style="text-align:center;"><span style="font-size:10px; color:#94a3b8;">ВСЕГО</span><br><span class="total-val" id="grandTotal">0 ₽</span></div>
+     <div style="text-align:center;"><span style="font-size:10px; color:#94a3b8;">МОЯ ДОЛЯ</span><br><span class="total-val val-highlight" id="perPlayerTotal">0 ₽</span></div>
    </div>
    <div id="mainGuestSummary" class="guest-summary-box" style="display:none;"></div>
  </div>
 </div>
 
-<div class="modal" id="scheduleModal" onclick="closeSchedule()">
- <div class="modal-content" id="pdfContent" onclick="event.stopPropagation()">
-   <div class="modal-header">
-     <h3 id="modalTitle" style="margin:0; color:#1a237e; font-size: 16px;">График тренировок</h3>
-     <span class="close-modal" onclick="closeSchedule()">&times;</span>
-   </div>
+<div class="modal" id="scheduleModal" onclick="this.style.display='none'">
+ <div class="modal-content" onclick="event.stopPropagation()">
    <div class="modal-body" id="scheduleList"></div>
-   <div class="modal-footer-sticky">
-     <div id="summaryBlock"></div>
-     <button class="btn-pdf" onclick="exportToPDF()" style="margin-top:10px;">Скачать PDF</button>
+   <div style="padding:20px; border-top:1px solid #f1f5f9; text-align:center;">
+     <button onclick="exportToPDF()" style="background:#1a237e; color:white; border:none; padding:10px 20px; border-radius:10px; font-weight:bold;">PDF</button>
    </div>
  </div>
 </div>
 
 <script>
- // Firebase Init
  const firebaseConfig = { databaseURL: "https://tennis-test-3c9e3-default-rtdb.europe-west1.firebasedatabase.app/" };
- if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+ if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
  const db = firebase.database();
 
  let selectedDayNum = null;
- let activeEntryIndex = -1; // -1 = новое, 0+ = индекс в массиве дня
- let schedule = {}; // Структура: { dayNum: [ {price, hours, location, time, guests}, ... ] }
- let lastUsedByWeekday = {};
+ let activeEntryIndex = -1;
+ let schedule = {};
  
- const monthNamesGenitive = ["январе", "феврале", "марте", "апреле", "мае", "июне", "июле", "августе", "сентябре", "октябре", "ноября", "декабре"];
- const monthNamesSchedule = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
- const locationPrices = { "дутик грунт": 2200, "тенн.центр": 2700, "улица грунт": 1500, "дутик хард": 2500 };
+ const monthNamesGenitive = ["январе", "феврале", "марте", "апреле", "мае", "июне", "июле", "августе", "сентябре", "октябре", "ноябре", "декабре"];
 
- function updateDefaultPrice() {
+ function updatePrice() {
    const loc = document.getElementById('locationSelect').value;
-   const customInput = document.getElementById('customLocation');
-   if (loc === "другое") { customInput.style.display = 'block'; } 
-   else { customInput.style.display = 'none'; if(locationPrices[loc]) document.getElementById('priceInput').value = locationPrices[loc]; }
+   const custom = document.getElementById('customLocation');
+   custom.style.display = (loc === 'другое') ? 'block' : 'none';
+   const prices = {"дутик грунт":2200, "тенн.центр":2700, "улица грунт":1500};
+   if(prices[loc]) document.getElementById('priceInput').value = prices[loc];
  }
 
  function changeTime(step) {
@@ -256,37 +181,20 @@
    input.value = `${Math.floor(total/60).toString().padStart(2,'0')}:${(total%60).toString().padStart(2,'0')}`;
  }
 
- function getShortLoc(full) {
-   if(!full) return ''; const l = full.toLowerCase();
-   if (l.includes('дутик грунт')) return 'дг'; if (l.includes('центр')) return 'тц';
-   if (l.includes('улица')) return 'уг'; if (l.includes('хард')) return 'дх'; return full.substring(0,3);
- }
-
  function loadData() {
    const monthIdx = document.getElementById('monthSelect').value;
-   db.ref('tennis_v3/' + monthIdx).once('value').then((snapshot) => {
-     const data = snapshot.val();
-     if (data) {
-       schedule = data.schedule || {};
-       // Конвертация старого формата (объект) в новый (массив), если нужно
-       Object.keys(schedule).forEach(day => {
-         if (!Array.isArray(schedule[day])) { schedule[day] = [schedule[day]]; }
-       });
-       document.getElementById('playerCount').value = data.players || 2;
-     } else {
-       schedule = {};
-       document.getElementById('playerCount').value = 2;
-     }
+   db.ref('tennis_v3/' + monthIdx).once('value').then(s => {
+     const data = s.val() || {};
+     schedule = data.schedule || {};
+     Object.keys(schedule).forEach(d => { if(!Array.isArray(schedule[d])) schedule[d] = [schedule[d]]; });
+     document.getElementById('playerCount').value = data.players || 2;
      renderCalendar();
-   }).catch(() => renderCalendar());
+   });
  }
 
  function saveDataToStorage() {
    const monthIdx = document.getElementById('monthSelect').value;
-   db.ref('tennis_v3/' + monthIdx).set({
-     schedule: schedule,
-     players: document.getElementById('playerCount').value
-   });
+   db.ref('tennis_v3/' + monthIdx).set({ schedule, players: document.getElementById('playerCount').value });
  }
 
  function initMonth() { deselect(); loadData(); }
@@ -294,7 +202,6 @@
  function deselect() {
    selectedDayNum = null; activeEntryIndex = -1;
    document.getElementById('editorPanel').style.display = 'none';
-   document.querySelectorAll('.date-cell').forEach(c => c.classList.remove('batch-preview'));
    renderCalendar();
  }
 
@@ -302,24 +209,16 @@
    const cal = document.getElementById('calendar'); cal.innerHTML = '';
    ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].forEach(d => cal.innerHTML += `<div class="day-name">${d}</div>`);
    const monthIdx = parseInt(document.getElementById('monthSelect').value);
-   const firstDay = new Date(2026, monthIdx, 1).getDay();
-   let offset = (firstDay === 0) ? 6 : firstDay - 1;
+   const offset = (new Date(2026, monthIdx, 1).getDay() || 7) - 1;
    for(let i=0; i<offset; i++) cal.innerHTML += '<div></div>';
-   const daysInMonth = new Date(2026, monthIdx + 1, 0).getDate();
-
-   for(let d=1; d<=daysInMonth; d++) {
-     let classes = ['date-cell']; let details = ''; let hasGuest = false;
+   
+   for(let d=1; d<=new Date(2026, monthIdx+1, 0).getDate(); d++) {
+     let classes = ['date-cell']; let details = '';
      if(schedule[d] && schedule[d].length > 0) {
        classes.push('saved');
-       const dayData = schedule[d].sort((a,b) => a.time.localeCompare(b.time));
-       const first = dayData[0];
-       const totalCost = dayData.reduce((sum, item) => sum + (item.price * item.hours), 0);
-       hasGuest = dayData.some(item => item.guests > 0);
-       if(hasGuest) classes.push('has-guest');
-       
-       let loc = getShortLoc(first.location);
-       let plusTag = dayData.length > 1 ? `<div class="plus-tag">+${dayData.length-1}</div>` : '';
-       details = `${plusTag}<div class="cell-info-row"><span class="cell-time-tag">${first.time}</span><span class="cell-loc-tag">${loc}</span></div><div class="cell-price">${Math.round(totalCost)}</div>`;
+       if(schedule[d].some(i => i.guests > 0)) classes.push('has-guest');
+       if(schedule[d].length > 1) details = `<div class="plus-tag">+${schedule[d].length-1}</div>`;
+       details += `<div class="cell-info-row">${schedule[d][0].time}</div>`;
      }
      if(d === selectedDayNum) classes.push('active');
      cal.innerHTML += `<div class="${classes.join(' ')}" onclick="event.stopPropagation(); selectDay(${d})"><span class="cell-day-num">${d}</span>${details}</div>`;
@@ -329,44 +228,28 @@
 
  function selectDay(day) {
    selectedDayNum = day;
-   const dayData = schedule[day] || [];
-   activeEntryIndex = dayData.length > 0 ? 0 : -1;
-   renderEditor();
-   renderCalendar();
+   activeEntryIndex = (schedule[day] && schedule[day].length > 0) ? 0 : -1;
+   renderEditor(); renderCalendar();
  }
 
  function renderEditor() {
-   const monthIdx = parseInt(document.getElementById('monthSelect').value);
-   const dateObj = new Date(2026, monthIdx, selectedDayNum);
-   const weekday = dateObj.getDay();
-   const dayShort = dateObj.toLocaleDateString('ru-RU', {weekday:'short'});
-
    document.getElementById('editorPanel').style.display = 'block';
-   document.getElementById('batchLabel').innerText = `+ Все ${dayShort}`;
-   document.getElementById('batchCheck').checked = false;
-   document.getElementById('batchWrap').classList.remove('active');
-
-   // Рендер вкладок
-   const tabs = document.getElementById('tabsRow');
-   tabs.innerHTML = '';
+   const tabs = document.getElementById('tabsRow'); tabs.innerHTML = '';
    const dayData = schedule[selectedDayNum] || [];
    
-   dayData.forEach((entry, idx) => {
-     const btn = document.createElement('div');
-     btn.className = `tab-btn ${idx === activeEntryIndex ? 'active' : ''}`;
-     btn.innerText = entry.time;
-     btn.onclick = (e) => { e.stopPropagation(); activeEntryIndex = idx; renderEditor(); };
-     tabs.appendChild(btn);
+   dayData.forEach((e, i) => {
+     const b = document.createElement('div');
+     b.className = `tab-btn ${i === activeEntryIndex ? 'active' : ''}`;
+     b.innerText = e.time;
+     b.onclick = (ev) => { ev.stopPropagation(); activeEntryIndex = i; renderEditor(); };
+     tabs.appendChild(b);
    });
 
-   const addBtn = document.createElement('div');
-   addBtn.className = `tab-btn add-new ${activeEntryIndex === -1 ? 'active' : ''}`;
-   addBtn.innerText = '+ Еще';
-   addBtn.onclick = (e) => { e.stopPropagation(); activeEntryIndex = -1; renderEditor(); };
-   tabs.appendChild(addBtn);
-
-   const saveBtn = document.getElementById('saveBtn');
-   const delBtn = document.getElementById('deleteBtn');
+   const add = document.createElement('div');
+   add.className = `tab-btn add-new ${activeEntryIndex === -1 ? 'active' : ''}`;
+   add.innerText = '+ Еще';
+   add.onclick = (ev) => { ev.stopPropagation(); activeEntryIndex = -1; renderEditor(); };
+   tabs.appendChild(add);
 
    if(activeEntryIndex !== -1) {
      const e = dayData[activeEntryIndex];
@@ -374,198 +257,97 @@
      document.getElementById('hoursInput').value = e.hours;
      document.getElementById('timeInput').value = e.time;
      document.getElementById('guestInput').value = e.guests || 0;
-     if(locationPrices[e.location]) { 
-       document.getElementById('locationSelect').value = e.location; 
-       document.getElementById('customLocation').style.display = 'none'; 
-     } else { 
-       document.getElementById('locationSelect').value = 'другое'; 
-       document.getElementById('customLocation').value = e.location; 
-       document.getElementById('customLocation').style.display = 'block'; 
-     }
-     saveBtn.innerText = "Обновить"; saveBtn.classList.add('update-mode');
-     document.getElementById('batchWrap').style.display = 'none';
-     delBtn.style.display = 'flex';
+     document.getElementById('deleteBtn').style.display = 'flex';
    } else {
-     saveBtn.innerText = "Сохранить"; saveBtn.classList.remove('update-mode');
-     document.getElementById('batchWrap').style.display = 'flex';
-     delBtn.style.display = 'none';
-     
-     if(lastUsedByWeekday[weekday]) {
-       const last = lastUsedByWeekday[weekday];
-       document.getElementById('priceInput').value = last.price;
-       document.getElementById('hoursInput').value = last.hours;
-       document.getElementById('timeInput').value = last.time;
-       document.getElementById('locationSelect').value = locationPrices[last.location] ? last.location : 'другое';
-     } else {
-       document.getElementById('timeInput').value = "19:00";
-       document.getElementById('guestInput').value = 0;
-     }
+     document.getElementById('deleteBtn').style.display = 'none';
    }
  }
 
  function saveData() {
-   const price = parseFloat(document.getElementById('priceInput').value);
-   const hours = parseFloat(document.getElementById('hoursInput').value);
-   const time = document.getElementById('timeInput').value;
-   const locSel = document.getElementById('locationSelect').value;
-   const location = locSel === 'другое' ? (document.getElementById('customLocation').value || 'другое') : locSel;
-   const guests = parseInt(document.getElementById('guestInput').value) || 0;
-   
-   const entry = { price, hours, location, time, guests };
-   const monthIdx = parseInt(document.getElementById('monthSelect').value);
-   const targetWeekday = new Date(2026, monthIdx, selectedDayNum).getDay();
-   lastUsedByWeekday[targetWeekday] = { price, hours, location, time };
-
+   const entry = {
+     price: parseFloat(document.getElementById('priceInput').value),
+     hours: parseFloat(document.getElementById('hoursInput').value),
+     time: document.getElementById('timeInput').value,
+     location: document.getElementById('locationSelect').value === 'другое' ? document.getElementById('customLocation').value : document.getElementById('locationSelect').value,
+     guests: parseInt(document.getElementById('guestInput').value) || 0
+   };
    if(!schedule[selectedDayNum]) schedule[selectedDayNum] = [];
-
-   if(document.getElementById('batchCheck').checked) {
-     const daysInMonth = new Date(2026, monthIdx + 1, 0).getDate();
-     for(let d=1; d<=daysInMonth; d++) {
-       if(new Date(2026, monthIdx, d).getDay() === targetWeekday) {
-         // Проверяем: если это выбранный день ИЛИ если день пуст
-         if(d === selectedDayNum || !schedule[d] || schedule[d].length === 0) {
-           if(!schedule[d]) schedule[d] = [];
-           const existsIdx = schedule[d].findIndex(e => e.time === time);
-           if(existsIdx > -1) schedule[d][existsIdx] = {...entry, guests: (d===selectedDayNum ? guests : schedule[d][existsIdx].guests)};
-           else schedule[d].push({...entry, guests: (d===selectedDayNum ? guests : 0)});
-           schedule[d].sort((a,b) => a.time.localeCompare(b.time));
-         }
-       }
-     }
-   } else {
-     if(activeEntryIndex === -1) schedule[selectedDayNum].push(entry);
-     else schedule[selectedDayNum][activeEntryIndex] = entry;
-     schedule[selectedDayNum].sort((a,b) => a.time.localeCompare(b.time));
-   }
+   if(activeEntryIndex === -1) schedule[selectedDayNum].push(entry);
+   else schedule[selectedDayNum][activeEntryIndex] = entry;
+   schedule[selectedDayNum].sort((a,b) => a.time.localeCompare(b.time));
    saveDataToStorage(); deselect();
  }
 
  function deleteEntry() {
-   if(confirm("Удалить тренировку?")) {
+   if(confirm("Удалить?")) {
      schedule[selectedDayNum].splice(activeEntryIndex, 1);
      if(schedule[selectedDayNum].length === 0) delete schedule[selectedDayNum];
      saveDataToStorage(); deselect();
    }
  }
 
- function toggleBatchPreview() {
-   const isChecked = document.getElementById('batchCheck').checked;
-   // Сначала очищаем все превью-выделения
-   document.querySelectorAll('.date-cell').forEach(c => c.classList.remove('batch-preview'));
-   
-   if (isChecked && selectedDayNum) {
-     const monthIdx = parseInt(document.getElementById('monthSelect').value);
-     const targetWeekday = new Date(2026, monthIdx, selectedDayNum).getDay();
-     
-     document.querySelectorAll('.date-cell').forEach(cell => {
-       const dayNumEl = cell.querySelector('.cell-day-num');
-       if (dayNumEl) {
-         const d = parseInt(dayNumEl.innerText);
-         // Условие: тот же день недели И это не текущий выбранный день И в расписании на этот день ПУСТО
-         const isSameWeekday = new Date(2026, monthIdx, d).getDay() === targetWeekday;
-         const isEmpty = !schedule[d] || schedule[d].length === 0;
-
-         if (isSameWeekday && d !== selectedDayNum && isEmpty) {
-           cell.classList.add('batch-preview');
-         }
-       }
-     });
-   }
- }
-
  function updateTotal() {
-   let myTotal = 0, fullTotal = 0, totalGuestIncome = 0, totalSessions = 0;
+   let myTotal = 0, fullTotal = 0, totalGuestIncome = 0;
    const basePlayers = parseInt(document.getElementById('playerCount').value) || 1;
    
-   Object.values(schedule).forEach(dayArray => {
-     dayArray.forEach(item => {
-       totalSessions++;
-       const cost = item.price * item.hours; fullTotal += cost;
-       const share = cost / (basePlayers + (item.guests || 0)); myTotal += share;
+   Object.values(schedule).forEach(dayArr => {
+     dayArr.forEach(item => {
+       const cost = item.price * item.hours;
+       fullTotal += cost;
+       const share = cost / (basePlayers + item.guests);
+       myTotal += share;
        if(item.guests > 0) totalGuestIncome += (share * item.guests);
      });
    });
 
-   const monthIdx = parseInt(document.getElementById('monthSelect').value);
-   document.getElementById('mainTotalLabel').innerText = `В ${monthNamesGenitive[monthIdx]} за ${totalSessions} тр.`;
    document.getElementById('grandTotal').innerText = Math.round(fullTotal).toLocaleString() + ' ₽';
    document.getElementById('perPlayerTotal').innerText = Math.round(myTotal).toLocaleString() + ' ₽';
-   
+
    const guestBox = document.getElementById('mainGuestSummary');
-   if(totalGuestIncome > 0) {
+   let dailyInfo = '';
+   
+   if (selectedDayNum && schedule[selectedDayNum]) {
+     let dailySaving = 0;
+     schedule[selectedDayNum].forEach(item => {
+       if(item.guests > 0) {
+         const dShare = (item.price * item.hours) / (basePlayers + item.guests);
+         dailySaving += (dShare * item.guests) / basePlayers;
+       }
+     });
+     if(dailySaving > 0) {
+       dailyInfo = `<div style="margin-top:8px; padding-top:8px; border-top:1px dashed #ffecb3; color:#b45309; text-align:center;">✨ Экономия за сегодня: <b>+${Math.round(dailySaving).toLocaleString()} ₽</b></div>`;
+     }
+   }
+
+   if(totalGuestIncome > 0 || dailyInfo !== '') {
      guestBox.style.display = 'block';
-     guestBox.innerHTML = `<div style="text-align:center;">💰 <b>Гости принесли (мес): ${Math.round(totalGuestIncome).toLocaleString()} ₽</b><br><span style="color:#64748b; font-size:11px;">Экономия каждого: по ${Math.round(totalGuestIncome/basePlayers).toLocaleString()} ₽</span></div>`;
+     let html = totalGuestIncome > 0 ? `<div style="text-align:center;">💰 <b>Гости принесли (мес): ${Math.round(totalGuestIncome).toLocaleString()} ₽</b><br><span style="color:#64748b; font-size:11px;">Экономия каждого: по ${Math.round(totalGuestIncome/basePlayers).toLocaleString()} ₽</span></div>` : '';
+     guestBox.innerHTML = html + dailyInfo;
    } else { guestBox.style.display = 'none'; }
  }
 
  function changeVal(id, step) {
-   const el = document.getElementById(id); let val = parseFloat(el.value) + step;
-   if(id === 'playerCount') { el.value = Math.max(1, val); updateTotal(); saveDataToStorage(); }
-   else if(id === 'guestInput') el.value = Math.max(0, val);
-   else el.value = (id === 'hoursInput') ? Math.max(0.5, val) : Math.max(0, val);
+   const el = document.getElementById(id);
+   el.value = Math.max((id==='hoursInput'?0.5:0), parseFloat(el.value) + step);
+   if(id==='playerCount') updateTotal();
  }
 
  function showSchedule() {
    const list = document.getElementById('scheduleList'); list.innerHTML = '';
-   const monthIdx = parseInt(document.getElementById('monthSelect').value);
-   const basePlayers = parseInt(document.getElementById('playerCount').value) || 1;
-   const sortedDays = Object.keys(schedule).sort((a,b)=>a-b);
-   
-   document.getElementById('modalTitle').innerText = `График тренировок в ${monthNamesGenitive[monthIdx]}`;
-   
-   let myTotal = 0, fullCost = 0, count = 0;
-   sortedDays.forEach(d => {
-     schedule[d].forEach(item => {
-       count++;
-       const date = new Date(2026, monthIdx, d);
-       const dayName = date.toLocaleDateString('ru-RU', {weekday:'long'});
-       const cost = item.hours * item.price; 
-       const share = cost / (basePlayers + item.guests);
-       myTotal += share; fullCost += cost;
-
-       let gInfo = item.guests > 0 ? `<div class="sch-guest-money">👤 Гости: +${item.guests} (С гостя: ${Math.round(share)} ₽)</div><div class="sch-saving">экономия напарникам: по ${Math.round((share*item.guests)/basePlayers)} ₽</div>` : '';
-       
-       list.innerHTML += `
-         <div class="schedule-item">
-           <div class="sch-date">${d} ${monthNamesSchedule[monthIdx]}, ${dayName} — ${item.time}</div>
-           <div class="sch-loc">
-             <span class="sch-cost-detail">${Math.round(cost).toLocaleString()} ₽</span>
-             ${item.location} • ${item.price}₽/ч • ${item.hours}ч
-           </div>
-           ${gInfo}
-         </div>`;
+   Object.keys(schedule).sort((a,b)=>a-b).forEach(d => {
+     schedule[d].forEach(e => {
+       list.innerHTML += `<div class="schedule-item"><b>${d} число - ${e.time}</b><br>${e.location}: ${e.price*e.hours} ₽</div>`;
      });
    });
-   
-   document.getElementById('summaryBlock').innerHTML = `
-     <div style="margin-top: 15px; border-top: 2px solid #f1f5f9; padding-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-       <div style="display: flex; flex-direction: column; align-items: center;">
-         <span style="font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: 800; text-align: center;">Всего за ${count} тр.</span>
-         <span style="font-size: 20px; font-weight: 800; color: #1e293b;">${Math.round(fullCost).toLocaleString()} ₽</span>
-       </div>
-       <div style="display: flex; flex-direction: column; align-items: center;">
-         <span style="font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: 800; text-align: center;">Моя доля</span>
-         <span style="font-size: 20px; font-weight: 800; color: #f59e0b;">${Math.round(myTotal).toLocaleString()} ₽</span>
-       </div>
-     </div>`;
    document.getElementById('scheduleModal').style.display = 'flex';
  }
 
  function exportToPDF() {
-   const modalContent = document.getElementById('pdfContent');
-   const monthIdx = document.getElementById('monthSelect').value;
-   const opt = {
-     margin: 10,
-     filename: `Tennis_${monthNamesGenitive[monthIdx]}.pdf`,
-     image: { type: 'jpeg', quality: 0.98 },
-     html2canvas: { scale: 2, useCORS: true },
-     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-   };
-   html2pdf().set(opt).from(modalContent).save();
+   const opt = { margin: 10, filename: 'calendar.pdf', jsPDF: { unit: 'mm', format: 'a4' } };
+   html2pdf().set(opt).from(document.getElementById('scheduleList')).save();
  }
- 
- function closeSchedule() { document.getElementById('scheduleModal').style.display = 'none'; }
- function fullReset() { if(confirm("Сбросить месяц?")) { schedule = {}; saveDataToStorage(); renderCalendar(); } }
+
+ function fullReset() { if(confirm("Очистить?")) { schedule = {}; saveDataToStorage(); renderCalendar(); } }
 
  initMonth();
 </script>
