@@ -11,41 +11,48 @@
  <style>
    body { font-family: 'Segoe UI', sans-serif; background: #f4f7f9; padding: 10px; margin: 0; color: #333; -webkit-tap-highlight-color: transparent; }
    .container { max-width: 420px; margin: auto; background: white; padding: 15px; border-radius: 28px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); min-height: 550px; width: 100%; box-sizing: border-box; padding-top: 25px;}
+  
    .header { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; align-items: center; margin-bottom: 15px; }
    #monthSelect { font-size: 14px; font-weight: bold; border: 1px solid #e0e4e8; border-radius: 12px; padding: 8px; color: #1a237e; background: #fff; flex: 1; outline: none; }
+  
    .btn-view-schedule { background: #e8eaf6; color: #1a237e; border: none; padding: 8px 14px; border-radius: 10px; font-size: 11px; font-weight: bold; cursor: pointer; }
    .btn-reset-top { background: #fff1f1; color: #dc2626; border: none; padding: 8px 14px; border-radius: 10px; font-size: 11px; font-weight: bold; cursor: pointer; }
 
-   .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 15px; }
+   .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 15px; width: 100%; box-sizing: border-box; }
    .day-name { text-align: center; font-size: 10px; color: #b0b8c1; font-weight: bold; text-transform: uppercase; padding-bottom: 2px; }
+  
+   /* ВОЗВРАТ ДИЗАЙНА ЯЧЕЕК */
    .date-cell {
-     aspect-ratio: 1 / 0.95; display: flex; flex-direction: column; align-items: center; justify-content: center;
+     aspect-ratio: 1 / 0.95; width: 95%; margin: auto; min-height: 42px;
+     display: flex; flex-direction: column; align-items: center; justify-content: center;
      background: #f8fafc; border-radius: 10px; font-size: 13px; cursor: pointer;
-     transition: 0.2s; border: 2px solid transparent; position: relative; box-sizing: border-box;
+     transition: 0.2s; border: 2px solid transparent; position: relative; box-sizing: border-box; padding: 2px; overflow: hidden;
    }
    .date-cell.active { border-color: #1a237e; background: #eff2ff; }
-   .date-cell.saved { background: #1a237e; color: white; }
-   .date-cell.has-guest { border: 2px dashed #ef4444; }
-   .date-cell.batch-preview { border-color: #1a237e; box-shadow: 0 0 8px rgba(26, 35, 126, 0.4); }
-   .cell-day-num { font-weight: 700; }
-   .cell-info-row { font-size: 8px; color: rgba(255,255,255,0.9); }
-   .plus-tag { position: absolute; top: 2px; right: 2px; background: #ffd600; color: #000; font-size: 7px; font-weight: 900; padding: 1px 3px; border-radius: 4px; }
+   .date-cell.saved { background: #1a237e; color: white; box-shadow: 0 4px 10px rgba(26, 35, 126, 0.2); }
+   .date-cell.has-guest { border: 2px dashed #ff4444; }
+  
+   .cell-day-num { font-weight: 700; margin-bottom: 1px; }
+   .cell-info-row { font-size: 8px; margin: 1px 0; color: rgba(255,255,255,0.9); white-space: nowrap; display: flex; flex-direction: column; align-items: center; }
+   .cell-time-tag { color: #ccff00 !important; font-weight: 900; font-size: 8px; }
+   .plus-tag { position: absolute; top: 2px; right: 2px; background: #ffd600; color: #000; font-size: 7px; font-weight: 900; padding: 1px 3px; border-radius: 4px; line-height: 1; }
 
    .editor-panel { background: #f8fafc; border-radius: 20px; padding: 15px; border: 1px solid #edf2f7; display: none; margin-bottom: 20px; }
-   .tabs-row { display: flex; gap: 6px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 4px; }
-   .tab-btn { padding: 6px 12px; border-radius: 10px; border: 1px solid #e2e8f0; background: white; font-size: 11px; font-weight: 800; color: #64748b; cursor: pointer; white-space: nowrap; }
-   .tab-btn.active { background: #1a237e; color: white; }
+   .tabs-row { display: flex; gap: 6px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+   .tab-btn { padding: 6px 12px; border-radius: 10px; border: 1px solid #e2e8f0; background: white; font-size: 11px; font-weight: 800; color: #64748b; white-space: nowrap; cursor: pointer; }
+   .tab-btn.active { background: #1a237e; color: white; border-color: #1a237e; }
    .tab-btn.add-new { background: #f0fdf4; color: #16a34a; border: 1px dashed #16a34a; }
 
-   .location-row { display: grid; grid-template-columns: 1fr 0.6fr auto; gap: 8px; margin-bottom: 12px; }
+   .location-row { display: grid; grid-template-columns: 1fr 0.6fr auto; gap: 8px; align-items: flex-end; margin-bottom: 12px; }
    .stepper-container { display: flex; flex-direction: column; }
    .stepper-label { font-size: 8px; color: #8e9aaf; margin-bottom: 4px; text-align: center; font-weight: 800; text-transform: uppercase; }
    .stepper { display: flex; align-items: center; background: white; border-radius: 10px; border: 1px solid #e2e8f0; height: 38px; overflow: hidden; }
-   .stepper-btn { width: 26px; height: 100%; border: none; background: #f1f5f9; color: #1a237e; font-weight: bold; cursor: pointer; }
-   .stepper-input { flex: 1; border: none; text-align: center; font-weight: 800; font-size: 13px; width: 30px; background: transparent; }
+   .stepper-btn { width: 26px; height: 100%; border: none; background: #f1f5f9; color: #1a237e; font-size: 16px; font-weight: bold; cursor: pointer; }
+   .stepper-input { flex: 1; border: none; text-align: center; font-weight: 800; font-size: 13px; width: 30px; background: transparent; outline: none; }
 
-   .button-group { display: flex; gap: 10px; height: 45px; }
-   .btn-save { flex: 1; background: #1a237e; color: white; border: none; border-radius: 18px; font-weight: 600; cursor: pointer; }
+   .button-group { display: flex; gap: 10px; align-items: stretch; height: 45px; }
+   /* ВОЗВРАТ РАЗМЕРА ШРИФТА КНОПКИ */
+   .btn-save { flex: 1; background: #1a237e; color: white; border: none; border-radius: 18px; font-weight: 600; font-size: 16px; cursor: pointer; }
    .btn-delete { background: #fff1f1; color: #dc2626; border: 1px solid #fee2e2; width: 45px; border-radius: 14px; cursor: pointer; display: none; align-items: center; justify-content: center; }
 
    .total-footer { background: #ffffff; border: 1px solid #f0f4f8; padding: 18px; border-radius: 24px; margin-top: 10px; }
@@ -54,7 +61,7 @@
    .val-highlight { color: #f59e0b; }
    .guest-summary-box { margin-top: 15px; padding: 12px; background: #fffcf0; border-radius: 16px; border: 1px solid #ffecb3; font-size: 12px; }
 
-   .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; }
+   .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
    .modal-content { background: white; width: 92%; max-width: 400px; border-radius: 24px; max-height: 85vh; overflow-y: auto; }
    .modal-body { padding: 20px; }
    .schedule-item { border-bottom: 1px solid #f1f5f9; padding: 12px 0; }
@@ -63,6 +70,8 @@
 <body onclick="deselect()">
 
 <div class="container" onclick="event.stopPropagation()">
+ <h1 style="text-align: center; color: #1a237e; font-size: 16px; margin: 0 0 15px 0; font-weight: 700;">Теннисный Календарь Pro</h1>
+ 
  <div class="header">
    <select id="monthSelect" onchange="initMonth()">
      <option value="0">Январь 2026</option><option value="1">Февраль 2026</option>
@@ -80,16 +89,17 @@
 
  <div class="editor-panel" id="editorPanel">
    <div class="tabs-row" id="tabsRow"></div>
+
    <div class="location-row">
      <div style="display: flex; flex-direction: column;">
        <span class="stepper-label">Локация</span>
-       <select id="locationSelect" onchange="updatePrice()" style="height:40px; border-radius:12px; border:1px solid #e2e8f0;">
+       <select id="locationSelect" onchange="updateDefaultPrice()" style="height:40px; border-radius:12px; border:1px solid #e2e8f0; padding:0 8px;">
          <option value="дутик грунт">дутик грунт</option>
          <option value="тенн.центр">тенн.центр</option>
          <option value="улица грунт">улица грунт</option>
          <option value="другое">другое...</option>
        </select>
-       <input type="text" id="customLocation" placeholder="Название" style="display:none; margin-top:4px; height:30px; border-radius:8px; border:1px solid #e2e8f0;">
+       <input type="text" id="customLocation" placeholder="Название" style="display:none; margin-top:4px; height:30px; border-radius:8px; border:1px solid #e2e8f0; padding:0 8px;">
      </div>
      <div class="stepper-container">
        <span class="stepper-label">Цена</span>
@@ -100,6 +110,7 @@
        </div>
      </div>
    </div>
+  
    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 15px;">
      <div class="stepper-container">
        <span class="stepper-label">Часы</span>
@@ -118,7 +129,7 @@
        </div>
      </div>
      <div class="stepper-container">
-       <span class="stepper-label" style="color:#dc2626">Гость</span>
+       <span class="stepper-label" style="color: #dc2626;">Гость</span>
        <div class="stepper" style="border-color:#ffecb3; background:#fffcf0;">
          <button class="stepper-btn" onclick="changeVal('guestInput', -1)">−</button>
          <input type="number" id="guestInput" class="stepper-input" value="0" readonly>
@@ -126,6 +137,7 @@
        </div>
      </div>
    </div>
+
    <div class="button-group">
      <button class="btn-save" onclick="saveData()">Сохранить</button>
      <button class="btn-delete" id="deleteBtn" onclick="deleteEntry()">✕</button>
@@ -133,13 +145,19 @@
  </div>
 
  <div class="total-footer">
-   <div style="text-align:center; margin-bottom:10px;">
-     <span style="font-size:10px; font-weight:800; color:#94a3b8;">ИГРОКОВ: </span>
-     <input type="number" id="playerCount" value="2" onchange="updateTotal(); saveDataToStorage();" style="width:40px; text-align:center; border-radius:8px; border:1px solid #e2e8f0; font-weight:800;">
+   <div style="text-align:center; margin-bottom:15px;">
+     <span style="font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: 800;">Игроков: </span>
+     <input type="number" id="playerCount" value="2" onchange="updateTotal(); saveDataToStorage();" style="width:40px; border:1px solid #e2e8f0; border-radius:8px; text-align:center; font-weight:800;">
    </div>
    <div class="total-grid">
-     <div style="text-align:center;"><span style="font-size:10px; color:#94a3b8;">ВСЕГО</span><br><span class="total-val" id="grandTotal">0 ₽</span></div>
-     <div style="text-align:center;"><span style="font-size:10px; color:#94a3b8;">МОЯ ДОЛЯ</span><br><span class="total-val val-highlight" id="perPlayerTotal">0 ₽</span></div>
+     <div style="display: flex; flex-direction: column; align-items: center;">
+       <span style="font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: 800;">Всего</span>
+       <span class="total-val" id="grandTotal">0 ₽</span>
+     </div>
+     <div style="display: flex; flex-direction: column; align-items: center;">
+       <span style="font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: 800;">Моя доля</span>
+       <span class="total-val val-highlight" id="perPlayerTotal">0 ₽</span>
+     </div>
    </div>
    <div id="mainGuestSummary" class="guest-summary-box" style="display:none;"></div>
  </div>
@@ -149,7 +167,7 @@
  <div class="modal-content" onclick="event.stopPropagation()">
    <div class="modal-body" id="scheduleList"></div>
    <div style="padding:20px; border-top:1px solid #f1f5f9; text-align:center;">
-     <button onclick="exportToPDF()" style="background:#1a237e; color:white; border:none; padding:10px 20px; border-radius:10px; font-weight:bold;">PDF</button>
+     <button onclick="exportToPDF()" style="background:#1a237e; color:white; border:none; padding:12px 24px; border-radius:12px; font-weight:bold; cursor:pointer;">Скачать PDF</button>
    </div>
  </div>
 </div>
@@ -160,17 +178,15 @@
  const db = firebase.database();
 
  let selectedDayNum = null;
- let activeEntryIndex = -1;
- let schedule = {};
- 
- const monthNamesGenitive = ["январе", "феврале", "марте", "апреле", "мае", "июне", "июле", "августе", "сентябре", "октябре", "ноябре", "декабре"];
+ let activeEntryIndex = -1; 
+ let schedule = {}; 
 
- function updatePrice() {
+ function updateDefaultPrice() {
    const loc = document.getElementById('locationSelect').value;
-   const custom = document.getElementById('customLocation');
-   custom.style.display = (loc === 'другое') ? 'block' : 'none';
-   const prices = {"дутик грунт":2200, "тенн.центр":2700, "улица грунт":1500};
-   if(prices[loc]) document.getElementById('priceInput').value = prices[loc];
+   const customInput = document.getElementById('customLocation');
+   customInput.style.display = (loc === "другое") ? 'block' : 'none';
+   const prices = { "дутик грунт": 2200, "тенн.центр": 2700, "улица грунт": 1500 };
+   if (prices[loc]) document.getElementById('priceInput').value = prices[loc];
  }
 
  function changeTime(step) {
@@ -183,10 +199,10 @@
 
  function loadData() {
    const monthIdx = document.getElementById('monthSelect').value;
-   db.ref('tennis_v3/' + monthIdx).once('value').then(s => {
-     const data = s.val() || {};
+   db.ref('tennis_v3/' + monthIdx).once('value').then((snapshot) => {
+     const data = snapshot.val() || {};
      schedule = data.schedule || {};
-     Object.keys(schedule).forEach(d => { if(!Array.isArray(schedule[d])) schedule[d] = [schedule[d]]; });
+     Object.keys(schedule).forEach(day => { if (!Array.isArray(schedule[day])) schedule[day] = [schedule[day]]; });
      document.getElementById('playerCount').value = data.players || 2;
      renderCalendar();
    });
@@ -208,17 +224,22 @@
  function renderCalendar() {
    const cal = document.getElementById('calendar'); cal.innerHTML = '';
    ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].forEach(d => cal.innerHTML += `<div class="day-name">${d}</div>`);
+   
    const monthIdx = parseInt(document.getElementById('monthSelect').value);
-   const offset = (new Date(2026, monthIdx, 1).getDay() || 7) - 1;
+   const firstDay = new Date(2026, monthIdx, 1).getDay();
+   let offset = (firstDay === 0) ? 6 : firstDay - 1;
    for(let i=0; i<offset; i++) cal.innerHTML += '<div></div>';
    
-   for(let d=1; d<=new Date(2026, monthIdx+1, 0).getDate(); d++) {
+   const daysInMonth = new Date(2026, monthIdx + 1, 0).getDate();
+   for(let d=1; d<=daysInMonth; d++) {
      let classes = ['date-cell']; let details = '';
      if(schedule[d] && schedule[d].length > 0) {
        classes.push('saved');
-       if(schedule[d].some(i => i.guests > 0)) classes.push('has-guest');
-       if(schedule[d].length > 1) details = `<div class="plus-tag">+${schedule[d].length-1}</div>`;
-       details += `<div class="cell-info-row">${schedule[d][0].time}</div>`;
+       const dayData = schedule[d].sort((a,b) => a.time.localeCompare(b.time));
+       if(dayData.some(i => i.guests > 0)) classes.push('has-guest');
+       
+       let plus = dayData.length > 1 ? `<div class="plus-tag">+${dayData.length-1}</div>` : '';
+       details = `${plus}<div class="cell-info-row"><span class="cell-time-tag">${dayData[0].time}</span></div>`;
      }
      if(d === selectedDayNum) classes.push('active');
      cal.innerHTML += `<div class="${classes.join(' ')}" onclick="event.stopPropagation(); selectDay(${d})"><span class="cell-day-num">${d}</span>${details}</div>`;
@@ -228,7 +249,8 @@
 
  function selectDay(day) {
    selectedDayNum = day;
-   activeEntryIndex = (schedule[day] && schedule[day].length > 0) ? 0 : -1;
+   const dayData = schedule[day] || [];
+   activeEntryIndex = dayData.length > 0 ? 0 : -1;
    renderEditor(); renderCalendar();
  }
 
@@ -237,19 +259,19 @@
    const tabs = document.getElementById('tabsRow'); tabs.innerHTML = '';
    const dayData = schedule[selectedDayNum] || [];
    
-   dayData.forEach((e, i) => {
-     const b = document.createElement('div');
-     b.className = `tab-btn ${i === activeEntryIndex ? 'active' : ''}`;
-     b.innerText = e.time;
-     b.onclick = (ev) => { ev.stopPropagation(); activeEntryIndex = i; renderEditor(); };
-     tabs.appendChild(b);
+   dayData.forEach((entry, idx) => {
+     const btn = document.createElement('div');
+     btn.className = `tab-btn ${idx === activeEntryIndex ? 'active' : ''}`;
+     btn.innerText = entry.time;
+     btn.onclick = (e) => { e.stopPropagation(); activeEntryIndex = idx; renderEditor(); };
+     tabs.appendChild(btn);
    });
 
-   const add = document.createElement('div');
-   add.className = `tab-btn add-new ${activeEntryIndex === -1 ? 'active' : ''}`;
-   add.innerText = '+ Еще';
-   add.onclick = (ev) => { ev.stopPropagation(); activeEntryIndex = -1; renderEditor(); };
-   tabs.appendChild(add);
+   const addBtn = document.createElement('div');
+   addBtn.className = `tab-btn add-new ${activeEntryIndex === -1 ? 'active' : ''}`;
+   addBtn.innerText = '+ Еще';
+   addBtn.onclick = (e) => { e.stopPropagation(); activeEntryIndex = -1; renderEditor(); };
+   tabs.appendChild(addBtn);
 
    if(activeEntryIndex !== -1) {
      const e = dayData[activeEntryIndex];
@@ -329,14 +351,14 @@
  function changeVal(id, step) {
    const el = document.getElementById(id);
    el.value = Math.max((id==='hoursInput'?0.5:0), parseFloat(el.value) + step);
-   if(id==='playerCount') updateTotal();
+   if(id==='playerCount') { updateTotal(); saveDataToStorage(); }
  }
 
  function showSchedule() {
    const list = document.getElementById('scheduleList'); list.innerHTML = '';
    Object.keys(schedule).sort((a,b)=>a-b).forEach(d => {
      schedule[d].forEach(e => {
-       list.innerHTML += `<div class="schedule-item"><b>${d} число - ${e.time}</b><br>${e.location}: ${e.price*e.hours} ₽</div>`;
+       list.innerHTML += `<div class="schedule-item"><b>${d} число - ${e.time}</b><br>${e.location}: ${Math.round(e.price*e.hours)} ₽</div>`;
      });
    });
    document.getElementById('scheduleModal').style.display = 'flex';
