@@ -480,9 +480,27 @@
    document.getElementById('perPlayerTotal').innerText = Math.round(myTotal).toLocaleString() + ' ₽';
    
    const guestBox = document.getElementById('mainGuestSummary');
-   if(totalGuestIncome > 0) {
+   let dailyInfo = '';
+
+   // Добавляем расчет экономии за ВЫБРАННЫЙ день
+   if (selectedDayNum && schedule[selectedDayNum]) {
+     let dailySaving = 0;
+     schedule[selectedDayNum].forEach(item => {
+       if(item.guests > 0) {
+         const dShare = (item.price * item.hours) / (basePlayers + item.guests);
+         dailySaving += (dShare * item.guests) / basePlayers;
+       }
+     });
+     if(dailySaving > 0) {
+       dailyInfo = `<div style="margin-top:8px; padding-top:8px; border-top:1px dashed #ffecb3; color:#b45309; text-align:center;">✨ Экономия за сегодня: <b>+${Math.round(dailySaving).toLocaleString()} ₽</b></div>`;
+     }
+   }
+
+   if(totalGuestIncome > 0 || dailyInfo !== '') {
      guestBox.style.display = 'block';
-     guestBox.innerHTML = `<div style="text-align:center;">💰 <b>Гости принесли (мес): ${Math.round(totalGuestIncome).toLocaleString()} ₽</b><br><span style="color:#64748b; font-size:11px;">Экономия каждого: по ${Math.round(totalGuestIncome/basePlayers).toLocaleString()} ₽</span></div>`;
+     let monthlyInfo = totalGuestIncome > 0 ? 
+       `<div style="text-align:center;">💰 <b>Гости принесли (мес): ${Math.round(totalGuestIncome).toLocaleString()} ₽</b><br><span style="color:#64748b; font-size:11px;">Экономия каждого: по ${Math.round(totalGuestIncome/basePlayers).toLocaleString()} ₽</span></div>` : '';
+     guestBox.innerHTML = monthlyInfo + dailyInfo;
    } else { guestBox.style.display = 'none'; }
  }
 
@@ -553,9 +571,11 @@
  }
  
  function closeSchedule() { document.getElementById('scheduleModal').style.display = 'none'; }
- function fullReset() { if(confirm("Сбросить месяц?")) { schedule = {}; saveDataToStorage(); renderCalendar(); } }
+ function fullReset() { if(confirm("Очистить весь месяц?")) { schedule = {}; saveDataToStorage(); renderCalendar(); } }
 
+ // Init
  initMonth();
+
 </script>
 </body>
 </html>
