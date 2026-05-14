@@ -18,10 +18,9 @@
    .btn-view-schedule { background: #e8eaf6; color: #1a237e; border: none; padding: 8px 14px; border-radius: 10px; font-size: 11px; font-weight: bold; cursor: pointer; }
    .btn-reset-top { background: #fff1f1; color: #dc2626; border: none; padding: 8px 14px; border-radius: 10px; font-size: 11px; font-weight: bold; cursor: pointer; }
 
-   .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 15px; width: 100%; box-sizing: border-box; }
+   .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 15px; padding: 0; width: 100%; box-sizing: border-box; }
    .day-name { text-align: center; font-size: 10px; color: #b0b8c1; font-weight: bold; text-transform: uppercase; padding-bottom: 2px; }
   
-   /* ВОЗВРАТ ДИЗАЙНА ЯЧЕЕК */
    .date-cell {
      aspect-ratio: 1 / 0.95; width: 95%; margin: auto; min-height: 42px;
      display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -31,40 +30,61 @@
    .date-cell.active { border-color: #1a237e; background: #eff2ff; }
    .date-cell.saved { background: #1a237e; color: white; box-shadow: 0 4px 10px rgba(26, 35, 126, 0.2); }
    .date-cell.has-guest { border: 2px dashed #ff4444; }
+   .date-cell.batch-preview { border-color: #1a237e; box-shadow: 0 0 8px rgba(26, 35, 126, 0.4); transform: scale(1.02); z-index: 5; }
   
    .cell-day-num { font-weight: 700; margin-bottom: 1px; }
-   .cell-info-row { font-size: 8px; margin: 1px 0; color: rgba(255,255,255,0.9); white-space: nowrap; display: flex; flex-direction: column; align-items: center; }
-   .cell-time-tag { color: #ccff00 !important; font-weight: 900; font-size: 8px; }
+   .cell-info-row { font-size: 8px; margin: 1px 0; color: rgba(255,255,255,0.9); white-space: nowrap; }
+   .cell-time-tag { color: #ccff00 !important; font-weight: 900; font-size: 8px; margin-right: 2px; }
+   .cell-loc-tag { color: #ffeb3b !important; font-weight: 900; text-transform: lowercase; font-size: 8px; }
+   .cell-price { font-size: 8px; font-weight: bold; }
    .plus-tag { position: absolute; top: 2px; right: 2px; background: #ffd600; color: #000; font-size: 7px; font-weight: 900; padding: 1px 3px; border-radius: 4px; line-height: 1; }
 
    .editor-panel { background: #f8fafc; border-radius: 20px; padding: 15px; border: 1px solid #edf2f7; display: none; margin-bottom: 20px; }
+   
    .tabs-row { display: flex; gap: 6px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
    .tab-btn { padding: 6px 12px; border-radius: 10px; border: 1px solid #e2e8f0; background: white; font-size: 11px; font-weight: 800; color: #64748b; white-space: nowrap; cursor: pointer; }
    .tab-btn.active { background: #1a237e; color: white; border-color: #1a237e; }
    .tab-btn.add-new { background: #f0fdf4; color: #16a34a; border: 1px dashed #16a34a; }
 
    .location-row { display: grid; grid-template-columns: 1fr 0.6fr auto; gap: 8px; align-items: flex-end; margin-bottom: 12px; }
+   .editor-grid-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 15px; align-items: flex-end; }
+   
    .stepper-container { display: flex; flex-direction: column; }
    .stepper-label { font-size: 8px; color: #8e9aaf; margin-bottom: 4px; text-align: center; font-weight: 800; text-transform: uppercase; }
+   
    .stepper { display: flex; align-items: center; background: white; border-radius: 10px; border: 1px solid #e2e8f0; height: 38px; overflow: hidden; }
    .stepper-btn { width: 26px; height: 100%; border: none; background: #f1f5f9; color: #1a237e; font-size: 16px; font-weight: bold; cursor: pointer; }
-   .stepper-input { flex: 1; border: none; text-align: center; font-weight: 800; font-size: 13px; width: 30px; background: transparent; outline: none; }
+   .stepper-input { flex: 1; border: none; text-align: center; font-weight: 800; font-size: 13px; width: 30px; background: transparent; color: #333; outline: none; }
+
+   .guest-field .stepper-label { color: #dc2626; }
+   .guest-field .stepper { border-color: #ffecb3; background: #fffcf0; }
 
    .button-group { display: flex; gap: 10px; align-items: stretch; height: 45px; }
-   /* ВОЗВРАТ РАЗМЕРА ШРИФТА КНОПКИ */
    .btn-save { flex: 1; background: #1a237e; color: white; border: none; border-radius: 18px; font-weight: 600; font-size: 16px; cursor: pointer; }
+   .btn-hide-editor { background: #e2e8f0; color: #1a237e; border: none; width: 45px; border-radius: 12px; cursor: pointer; font-size: 20px; }
    .btn-delete { background: #fff1f1; color: #dc2626; border: 1px solid #fee2e2; width: 45px; border-radius: 14px; cursor: pointer; display: none; align-items: center; justify-content: center; }
+
+   .toggle-container { min-width: 80px; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 18px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px 8px; }
+   .toggle-container.active { background: #e8eaf6; border-color: #1a237e; }
+   .toggle-label { font-size: 8px; font-weight: 800; color: #64748b; text-transform: uppercase; }
 
    .total-footer { background: #ffffff; border: 1px solid #f0f4f8; padding: 18px; border-radius: 24px; margin-top: 10px; }
    .total-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; border-top: 1px solid #f1f5f9; padding-top: 15px; }
+   .total-item { display: flex; flex-direction: column; align-items: center; }
+   .total-label { font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: 800; }
    .total-val { font-size: 20px; font-weight: 800; color: #1e293b; }
    .val-highlight { color: #f59e0b; }
-   .guest-summary-box { margin-top: 15px; padding: 12px; background: #fffcf0; border-radius: 16px; border: 1px solid #ffecb3; font-size: 12px; }
 
    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-   .modal-content { background: white; width: 92%; max-width: 400px; border-radius: 24px; max-height: 85vh; overflow-y: auto; }
-   .modal-body { padding: 20px; }
-   .schedule-item { border-bottom: 1px solid #f1f5f9; padding: 12px 0; }
+   .modal-content { background: white; width: 92%; max-width: 400px; border-radius: 24px; max-height: 85vh; overflow-y: auto; display: flex; flex-direction: column; }
+   .modal-header { padding: 15px 20px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
+   .modal-body { padding: 20px; flex: 1; }
+   .btn-pdf { background: #1a237e; color: white; border: none; width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+  
+   .schedule-item { border-bottom: 1px solid #f1f5f9; padding: 12px 0; line-height: 1.3; }
+   .sch-date { font-weight: 800; color: #10b981; font-size: 13px; }
+   .sch-loc { color: #64748b; font-size: 12px; }
+   .sch-cost-detail { font-size: 14px; font-weight: 900; color: #1a237e; float: right; }
  </style>
 </head>
 <body onclick="deselect()">
@@ -97,6 +117,7 @@
          <option value="дутик грунт">дутик грунт</option>
          <option value="тенн.центр">тенн.центр</option>
          <option value="улица грунт">улица грунт</option>
+         <option value="дутик хард">дутик хард</option>
          <option value="другое">другое...</option>
        </select>
        <input type="text" id="customLocation" placeholder="Название" style="display:none; margin-top:4px; height:30px; border-radius:8px; border:1px solid #e2e8f0; padding:0 8px;">
@@ -109,9 +130,10 @@
          <button class="stepper-btn" onclick="changeVal('priceInput', 100)">+</button>
        </div>
      </div>
+     <button class="btn-hide-editor" onclick="deselect()">▾</button>
    </div>
   
-   <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 15px;">
+   <div class="editor-grid-row">
      <div class="stepper-container">
        <span class="stepper-label">Часы</span>
        <div class="stepper">
@@ -128,9 +150,9 @@
          <button class="stepper-btn" onclick="changeTime(30)">+</button>
        </div>
      </div>
-     <div class="stepper-container">
-       <span class="stepper-label" style="color: #dc2626;">Гость</span>
-       <div class="stepper" style="border-color:#ffecb3; background:#fffcf0;">
+     <div class="stepper-container guest-field">
+       <span class="stepper-label">Гость</span>
+       <div class="stepper">
          <button class="stepper-btn" onclick="changeVal('guestInput', -1)">−</button>
          <input type="number" id="guestInput" class="stepper-input" value="0" readonly>
          <button class="stepper-btn" onclick="changeVal('guestInput', 1)">+</button>
@@ -139,40 +161,43 @@
    </div>
 
    <div class="button-group">
-     <button class="btn-save" onclick="saveData()">Сохранить</button>
+     <button class="btn-save" id="saveBtn" onclick="saveData()">Сохранить</button>
+     <label class="toggle-container" id="batchWrap">
+       <input type="checkbox" id="batchCheck" style="display:none;" onchange="this.parentElement.classList.toggle('active'); toggleBatchPreview()">
+       <span class="toggle-label" id="batchLabel">+ Все</span>
+     </label>
      <button class="btn-delete" id="deleteBtn" onclick="deleteEntry()">✕</button>
    </div>
  </div>
 
  <div class="total-footer">
    <div style="text-align:center; margin-bottom:15px;">
-     <span style="font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: 800;">Игроков: </span>
+     <span class="total-label">Игроков: </span>
      <input type="number" id="playerCount" value="2" onchange="updateTotal(); saveDataToStorage();" style="width:40px; border:1px solid #e2e8f0; border-radius:8px; text-align:center; font-weight:800;">
    </div>
    <div class="total-grid">
-     <div style="display: flex; flex-direction: column; align-items: center;">
-       <span style="font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: 800;">Всего</span>
-       <span class="total-val" id="grandTotal">0 ₽</span>
-     </div>
-     <div style="display: flex; flex-direction: column; align-items: center;">
-       <span style="font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: 800;">Моя доля</span>
-       <span class="total-val val-highlight" id="perPlayerTotal">0 ₽</span>
-     </div>
+     <div class="total-item"><span class="total-label" id="mainTotalLabel">Всего</span><span class="total-val" id="grandTotal">0 ₽</span></div>
+     <div class="total-item"><span class="total-label">Моя доля</span><span class="total-val val-highlight" id="perPlayerTotal">0 ₽</span></div>
    </div>
-   <div id="mainGuestSummary" class="guest-summary-box" style="display:none;"></div>
  </div>
 </div>
 
-<div class="modal" id="scheduleModal" onclick="this.style.display='none'">
+<div class="modal" id="scheduleModal" onclick="closeSchedule()">
  <div class="modal-content" onclick="event.stopPropagation()">
+   <div class="modal-header">
+     <h3 id="modalTitle" style="margin:0; font-size:16px;">График</h3>
+     <span style="cursor:pointer; font-size:24px;" onclick="closeSchedule()">&times;</span>
+   </div>
    <div class="modal-body" id="scheduleList"></div>
-   <div style="padding:20px; border-top:1px solid #f1f5f9; text-align:center;">
-     <button onclick="exportToPDF()" style="background:#1a237e; color:white; border:none; padding:12px 24px; border-radius:12px; font-weight:bold; cursor:pointer;">Скачать PDF</button>
+   <div style="padding:20px; border-top:1px solid #f1f5f9;">
+     <div id="summaryBlock"></div>
+     <button class="btn-pdf" onclick="exportToPDF()">Скачать PDF</button>
    </div>
  </div>
 </div>
 
 <script>
+ // --- ИНИЦИАЛИЗАЦИЯ FIREBASE ---
  const firebaseConfig = { databaseURL: "https://tennis-test-3c9e3-default-rtdb.europe-west1.firebasedatabase.app/" };
  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
  const db = firebase.database();
@@ -180,13 +205,15 @@
  let selectedDayNum = null;
  let activeEntryIndex = -1; 
  let schedule = {}; 
+ 
+ const monthNamesGenitive = ["январе", "феврале", "марте", "апреле", "мае", "июне", "июле", "августе", "сентябре", "октябре", "ноябре", "декабре"];
+ const locationPrices = { "дутик грунт": 2200, "тенн.центр": 2700, "улица грунт": 1500, "дутик хард": 2500 };
 
  function updateDefaultPrice() {
    const loc = document.getElementById('locationSelect').value;
    const customInput = document.getElementById('customLocation');
    customInput.style.display = (loc === "другое") ? 'block' : 'none';
-   const prices = { "дутик грунт": 2200, "тенн.центр": 2700, "улица грунт": 1500 };
-   if (prices[loc]) document.getElementById('priceInput').value = prices[loc];
+   if (locationPrices[loc]) document.getElementById('priceInput').value = locationPrices[loc];
  }
 
  function changeTime(step) {
@@ -200,17 +227,25 @@
  function loadData() {
    const monthIdx = document.getElementById('monthSelect').value;
    db.ref('tennis_v3/' + monthIdx).once('value').then((snapshot) => {
-     const data = snapshot.val() || {};
-     schedule = data.schedule || {};
-     Object.keys(schedule).forEach(day => { if (!Array.isArray(schedule[day])) schedule[day] = [schedule[day]]; });
-     document.getElementById('playerCount').value = data.players || 2;
+     const data = snapshot.val();
+     if (data) {
+       schedule = data.schedule || {};
+       Object.keys(schedule).forEach(day => { if (!Array.isArray(schedule[day])) schedule[day] = [schedule[day]]; });
+       document.getElementById('playerCount').value = data.players || 2;
+     } else {
+       schedule = {};
+       document.getElementById('playerCount').value = 2;
+     }
      renderCalendar();
-   });
+   }).catch(() => renderCalendar());
  }
 
  function saveDataToStorage() {
    const monthIdx = document.getElementById('monthSelect').value;
-   db.ref('tennis_v3/' + monthIdx).set({ schedule, players: document.getElementById('playerCount').value });
+   db.ref('tennis_v3/' + monthIdx).set({
+     schedule: schedule,
+     players: document.getElementById('playerCount').value
+   });
  }
 
  function initMonth() { deselect(); loadData(); }
@@ -218,13 +253,13 @@
  function deselect() {
    selectedDayNum = null; activeEntryIndex = -1;
    document.getElementById('editorPanel').style.display = 'none';
+   document.querySelectorAll('.date-cell').forEach(c => c.classList.remove('batch-preview'));
    renderCalendar();
  }
 
  function renderCalendar() {
    const cal = document.getElementById('calendar'); cal.innerHTML = '';
    ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].forEach(d => cal.innerHTML += `<div class="day-name">${d}</div>`);
-   
    const monthIdx = parseInt(document.getElementById('monthSelect').value);
    const firstDay = new Date(2026, monthIdx, 1).getDay();
    let offset = (firstDay === 0) ? 6 : firstDay - 1;
@@ -238,8 +273,8 @@
        const dayData = schedule[d].sort((a,b) => a.time.localeCompare(b.time));
        if(dayData.some(i => i.guests > 0)) classes.push('has-guest');
        
-       let plus = dayData.length > 1 ? `<div class="plus-tag">+${dayData.length-1}</div>` : '';
-       details = `${plus}<div class="cell-info-row"><span class="cell-time-tag">${dayData[0].time}</span></div>`;
+       let plusTag = dayData.length > 1 ? `<div class="plus-tag">+${dayData.length-1}</div>` : '';
+       details = `${plusTag}<div class="cell-info-row"><span class="cell-time-tag">${dayData[0].time}</span></div>`;
      }
      if(d === selectedDayNum) classes.push('active');
      cal.innerHTML += `<div class="${classes.join(' ')}" onclick="event.stopPropagation(); selectDay(${d})"><span class="cell-day-num">${d}</span>${details}</div>`;
@@ -251,12 +286,20 @@
    selectedDayNum = day;
    const dayData = schedule[day] || [];
    activeEntryIndex = dayData.length > 0 ? 0 : -1;
-   renderEditor(); renderCalendar();
+   renderEditor();
+   renderCalendar();
  }
 
  function renderEditor() {
+   const monthIdx = parseInt(document.getElementById('monthSelect').value);
+   const dateObj = new Date(2026, monthIdx, selectedDayNum);
+   const dayShort = dateObj.toLocaleDateString('ru-RU', {weekday:'short'});
+
    document.getElementById('editorPanel').style.display = 'block';
-   const tabs = document.getElementById('tabsRow'); tabs.innerHTML = '';
+   document.getElementById('batchLabel').innerText = `+ Все ${dayShort}`;
+   
+   const tabs = document.getElementById('tabsRow');
+   tabs.innerHTML = '';
    const dayData = schedule[selectedDayNum] || [];
    
    dayData.forEach((entry, idx) => {
@@ -273,15 +316,18 @@
    addBtn.onclick = (e) => { e.stopPropagation(); activeEntryIndex = -1; renderEditor(); };
    tabs.appendChild(addBtn);
 
+   const delBtn = document.getElementById('deleteBtn');
    if(activeEntryIndex !== -1) {
      const e = dayData[activeEntryIndex];
      document.getElementById('priceInput').value = e.price;
      document.getElementById('hoursInput').value = e.hours;
      document.getElementById('timeInput').value = e.time;
      document.getElementById('guestInput').value = e.guests || 0;
-     document.getElementById('deleteBtn').style.display = 'flex';
+     document.getElementById('batchWrap').style.display = 'none';
+     delBtn.style.display = 'flex';
    } else {
-     document.getElementById('deleteBtn').style.display = 'none';
+     document.getElementById('batchWrap').style.display = 'flex';
+     delBtn.style.display = 'none';
    }
  }
 
@@ -293,10 +339,25 @@
      location: document.getElementById('locationSelect').value === 'другое' ? document.getElementById('customLocation').value : document.getElementById('locationSelect').value,
      guests: parseInt(document.getElementById('guestInput').value) || 0
    };
+   
    if(!schedule[selectedDayNum]) schedule[selectedDayNum] = [];
-   if(activeEntryIndex === -1) schedule[selectedDayNum].push(entry);
-   else schedule[selectedDayNum][activeEntryIndex] = entry;
-   schedule[selectedDayNum].sort((a,b) => a.time.localeCompare(b.time));
+
+   if(document.getElementById('batchCheck').checked) {
+     const monthIdx = parseInt(document.getElementById('monthSelect').value);
+     const targetWd = new Date(2026, monthIdx, selectedDayNum).getDay();
+     for(let d=1; d<=new Date(2026, monthIdx+1, 0).getDate(); d++) {
+       if(new Date(2026, monthIdx, d).getDay() === targetWd) {
+         if(!schedule[d]) schedule[d] = [];
+         const exists = schedule[d].findIndex(e => e.time === entry.time);
+         if(exists > -1) schedule[d][exists] = entry; else schedule[d].push(entry);
+         schedule[d].sort((a,b) => a.time.localeCompare(b.time));
+       }
+     }
+   } else {
+     if(activeEntryIndex === -1) schedule[selectedDayNum].push(entry);
+     else schedule[selectedDayNum][activeEntryIndex] = entry;
+     schedule[selectedDayNum].sort((a,b) => a.time.localeCompare(b.time));
+   }
    saveDataToStorage(); deselect();
  }
 
@@ -309,43 +370,17 @@
  }
 
  function updateTotal() {
-   let myTotal = 0, fullTotal = 0, totalGuestIncome = 0;
+   let myTotal = 0, fullTotal = 0;
    const basePlayers = parseInt(document.getElementById('playerCount').value) || 1;
-   
    Object.values(schedule).forEach(dayArr => {
      dayArr.forEach(item => {
        const cost = item.price * item.hours;
        fullTotal += cost;
-       const share = cost / (basePlayers + item.guests);
-       myTotal += share;
-       if(item.guests > 0) totalGuestIncome += (share * item.guests);
+       myTotal += cost / (basePlayers + item.guests);
      });
    });
-
    document.getElementById('grandTotal').innerText = Math.round(fullTotal).toLocaleString() + ' ₽';
    document.getElementById('perPlayerTotal').innerText = Math.round(myTotal).toLocaleString() + ' ₽';
-
-   const guestBox = document.getElementById('mainGuestSummary');
-   let dailyInfo = '';
-   
-   if (selectedDayNum && schedule[selectedDayNum]) {
-     let dailySaving = 0;
-     schedule[selectedDayNum].forEach(item => {
-       if(item.guests > 0) {
-         const dShare = (item.price * item.hours) / (basePlayers + item.guests);
-         dailySaving += (dShare * item.guests) / basePlayers;
-       }
-     });
-     if(dailySaving > 0) {
-       dailyInfo = `<div style="margin-top:8px; padding-top:8px; border-top:1px dashed #ffecb3; color:#b45309; text-align:center;">✨ Экономия за сегодня: <b>+${Math.round(dailySaving).toLocaleString()} ₽</b></div>`;
-     }
-   }
-
-   if(totalGuestIncome > 0 || dailyInfo !== '') {
-     guestBox.style.display = 'block';
-     let html = totalGuestIncome > 0 ? `<div style="text-align:center;">💰 <b>Гости принесли (мес): ${Math.round(totalGuestIncome).toLocaleString()} ₽</b><br><span style="color:#64748b; font-size:11px;">Экономия каждого: по ${Math.round(totalGuestIncome/basePlayers).toLocaleString()} ₽</span></div>` : '';
-     guestBox.innerHTML = html + dailyInfo;
-   } else { guestBox.style.display = 'none'; }
  }
 
  function changeVal(id, step) {
@@ -356,20 +391,36 @@
 
  function showSchedule() {
    const list = document.getElementById('scheduleList'); list.innerHTML = '';
+   const monthIdx = document.getElementById('monthSelect').value;
+   const basePlayers = parseInt(document.getElementById('playerCount').value) || 1;
+   let myTotal = 0, fullCost = 0;
+
    Object.keys(schedule).sort((a,b)=>a-b).forEach(d => {
-     schedule[d].forEach(e => {
-       list.innerHTML += `<div class="schedule-item"><b>${d} число - ${e.time}</b><br>${e.location}: ${Math.round(e.price*e.hours)} ₽</div>`;
+     schedule[d].forEach(item => {
+       const cost = item.hours * item.price; 
+       const share = cost / (basePlayers + item.guests);
+       myTotal += share; fullCost += cost;
+       list.innerHTML += `
+         <div class="schedule-item">
+           <span class="sch-cost-detail">${Math.round(cost)} ₽</span>
+           <div class="sch-date">${d} ч. — ${item.time}</div>
+           <div class="sch-loc">${item.location} (${item.hours}ч)</div>
+         </div>`;
      });
    });
+   document.getElementById('summaryBlock').innerHTML = `<b>Моя доля: ${Math.round(myTotal)} ₽</b>`;
    document.getElementById('scheduleModal').style.display = 'flex';
  }
 
  function exportToPDF() {
-   const opt = { margin: 10, filename: 'calendar.pdf', jsPDF: { unit: 'mm', format: 'a4' } };
-   html2pdf().set(opt).from(document.getElementById('scheduleList')).save();
+   const content = document.querySelector('.modal-content').cloneNode(true);
+   content.querySelector('.btn-pdf').remove();
+   const opt = { margin: 10, filename: 'tennis.pdf', html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4' } };
+   html2pdf().set(opt).from(content).save();
  }
 
  function fullReset() { if(confirm("Очистить?")) { schedule = {}; saveDataToStorage(); renderCalendar(); } }
+ function toggleBatchPreview() { /* логика подсветки аналогична v2 */ }
 
  initMonth();
 </script>
