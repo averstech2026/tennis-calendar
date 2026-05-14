@@ -1,1 +1,254 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+ <title>Теннисный Календарь Pro Multi-Session</title>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
+ <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+ <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+ <script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyC3zFctsh0cDOSfUitTBlBs-RMsN5lm7Xg",
+    authDomain: "tennis-test-3c9e3.firebaseapp.com",
+    databaseURL: "https://tennis-test-3c9e3-default-rtdb.europe-west1.firebasedatabase.app/",
+    projectId: "tennis-test-3c9e3",
+    storageBucket: "tennis-test-3c9e3.firebasestorage.app",
+    messagingSenderId: "442862555231",
+    appId: "1:442862555231:web:05e0e7794e2b575eabcbea",
+    measurementId: "G-VCJWXE9S17"
+  };
+
+  // Инициализация
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+ </script>
+
+ <style>
+   body { font-family: 'Segoe UI', sans-serif; background: #f4f7f9; padding: 10px; margin: 0; color: #333; -webkit-tap-highlight-color: transparent; }
+   .container { max-width: 420px; margin: auto; background: white; padding: 15px; border-radius: 28px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); width: 100%; box-sizing: border-box; }
+  
+   .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 15px; }
+   
+   /* Статичная сетка с оригинальным дизайном */
+   .date-cell {
+     min-height: 52px; height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+     background: #f8fafc; border-radius: 12px; font-size: 12px; cursor: pointer;
+     transition: 0.2s; border: 2px solid transparent; position: relative; padding: 2px; overflow: hidden;
+   }
+   .date-cell.active { border-color: #1a237e; background: #eff2ff; }
+   .date-cell.saved { background: #4caf50; color: white; }
+   
+   .cell-day-num { font-weight: 800; margin-bottom: 2px; font-size: 11px; }
+   .cell-loc { font-size: 7px; text-transform: uppercase; opacity: 0.9; font-weight: 600; text-align: center; line-height: 1; width: 100%; white-space: nowrap; overflow: hidden; }
+   .cell-time { font-size: 9px; font-weight: 900; color: #ccff00; margin-top: 1px; }
+
+   /* Маркер +N */
+   .multi-badge {
+     position: absolute; top: 3px; right: 3px; background: #ffeb3b; color: #1a237e;
+     font-size: 7px; font-weight: 900; padding: 1px 3px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.1);
+   }
+
+   .editor-panel { background: #f8fafc; border-radius: 20px; padding: 15px; border: 1px solid #edf2f7; display: none; margin-bottom: 20px; }
+   
+   /* Табы тренировок */
+   .session-tabs { display: flex; gap: 6px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 4px; }
+   .tab { 
+     padding: 6px 12px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; 
+     font-size: 10px; font-weight: 800; color: #64748b; cursor: pointer; white-space: nowrap; transition: 0.2s;
+   }
+   .tab.active { background: #1a237e; color: white; border-color: #1a237e; }
+   .tab.add { color: #2e7d32; border: 1px dashed #c8e6c9; }
+   .tab.add.active { background: #4caf50; color: white; border-style: solid; border-color: #4caf50; }
+
+   .input-group { display: flex; flex-direction: column; gap: 4px; }
+   .input-label { font-size: 9px; color: #8e9aaf; font-weight: 800; text-transform: uppercase; }
+   select, input { height: 38px; border-radius: 10px; border: 1px solid #e2e8f0; padding: 0 8px; font-weight: 700; font-family: inherit; font-size: 13px; }
+
+   .btn-save { flex: 1; background: #1a237e; color: white; border: none; border-radius: 18px; font-weight: 600; height: 45px; cursor: pointer; }
+   .btn-del { width: 45px; background: #fff1f1; color: #dc2626; border: 1px solid #fee2e2; border-radius: 14px; cursor: pointer; }
+
+   .total-footer { background: #ffffff; border: 1px solid #f0f4f8; padding: 15px; border-radius: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+   .total-val { font-size: 18px; font-weight: 800; display: block; }
+ </style>
+</head>
+<body onclick="deselect()">
+
+<div class="container" onclick="event.stopPropagation()">
+ <h2 style="text-align: center; color: #1a237e; font-size: 14px; margin: 10px 0 15px 0; font-weight: 800;">Теннисный Календарь</h2>
+ 
+ <div class="calendar" id="calendar"></div>
+
+ <div class="editor-panel" id="editorPanel">
+   <div id="sessionTabs" class="session-tabs"></div>
+
+   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+     <div class="input-group">
+       <span class="input-label">Локация</span>
+       <select id="f_loc">
+         <option value="дутик грунт">ДУТИК</option>
+         <option value="тенн.центр">ТЦ</option>
+         <option value="улица грунт">УЛИЦА</option>
+       </select>
+     </div>
+     <div class="input-group">
+       <span class="input-label">Время</span>
+       <input type="time" id="f_time">
+     </div>
+   </div>
+
+   <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+     <div class="input-group"><span class="input-label">Часы</span><input type="number" id="f_hrs" value="1" step="0.5"></div>
+     <div class="input-group"><span class="input-label">Цена</span><input type="number" id="f_prc" value="2200"></div>
+     <div class="input-group"><span class="input-label">Гости</span><input type="number" id="f_gst" value="0"></div>
+   </div>
+
+   <div style="display: flex; gap: 8px;">
+     <button class="btn-save" onclick="saveData()">Сохранить</button>
+     <button class="btn-del" id="delBtn" onclick="deleteSession()">✕</button>
+   </div>
+ </div>
+
+ <div class="total-footer">
+   <div style="text-align:center;"><span style="font-size:9px; color:#94a3b8;">ИТОГО</span><span class="total-val" id="sumFull">0 ₽</span></div>
+   <div style="text-align:center;"><span style="font-size:9px; color:#94a3b8;">МОЯ ДОЛЯ</span><span class="total-val" style="color:#f59e0b;" id="sumMy">0 ₽</span></div>
+ </div>
+</div>
+
+<script>
+ let schedule = {}; 
+ let selectedDay = null;
+ let activeIdx = 0;
+
+ function render() {
+   const cal = document.getElementById('calendar');
+   cal.innerHTML = '';
+   
+   for(let d=1; d<=31; d++) {
+     let classes = ['date-cell'];
+     let content = `<span class="cell-day-num">${d}</span>`;
+     
+     if(schedule[d] && schedule[d].length > 0) {
+       classes.push('saved');
+       const first = schedule[d][0];
+       content += `<div class="cell-loc">${first.loc}</div>`;
+       content += `<div class="cell-time">${first.time}</div>`;
+       
+       if(schedule[d].length > 1) {
+         content += `<div class="multi-badge">+${schedule[d].length - 1}</div>`;
+       }
+     }
+     
+     if(d === selectedDay) classes.push('active');
+     cal.innerHTML += `<div class="${classes.join(' ')}" onclick="event.stopPropagation(); selectDay(${d})">${content}</div>`;
+   }
+   calc();
+ }
+
+ function selectDay(day) {
+   selectedDay = day;
+   activeIdx = 0;
+   if(!schedule[day]) schedule[day] = [];
+   showEditor();
+   render();
+ }
+
+ function showEditor() {
+   const panel = document.getElementById('editorPanel');
+   panel.style.display = 'block';
+   
+   const tabs = document.getElementById('sessionTabs');
+   tabs.innerHTML = '';
+   
+   const sessionsCount = schedule[selectedDay].length;
+   
+   schedule[selectedDay].forEach((s, i) => {
+     tabs.innerHTML += `<div class="tab ${i === activeIdx ? 'active' : ''}" 
+                        onclick="activeIdx=${i}; showEditor()">${s.time}</div>`;
+   });
+   
+   const isAddingNew = activeIdx === sessionsCount;
+   tabs.innerHTML += `<div class="tab add ${isAddingNew ? 'active' : ''}" 
+                      onclick="addNew()">+ Еще</div>`;
+   
+   const s = schedule[selectedDay][activeIdx];
+   if(s) {
+     document.getElementById('f_loc').value = s.loc;
+     document.getElementById('f_time').value = s.time;
+     document.getElementById('f_hrs').value = s.hrs;
+     document.getElementById('f_prc').value = s.prc;
+     document.getElementById('f_gst').value = s.gst;
+     document.getElementById('delBtn').style.display = 'block';
+   } else {
+     resetFields();
+     document.getElementById('delBtn').style.display = 'none';
+   }
+ }
+
+ function addNew() {
+   activeIdx = schedule[selectedDay].length;
+   resetFields();
+   showEditor();
+ }
+
+ function resetFields() {
+   document.getElementById('f_time').value = "19:00";
+   document.getElementById('f_hrs').value = 1;
+   document.getElementById('f_prc').value = 2200;
+   document.getElementById('f_gst').value = 0;
+ }
+
+ function saveData() {
+   const data = {
+     loc: document.getElementById('f_loc').value,
+     time: document.getElementById('f_time').value,
+     hrs: parseFloat(document.getElementById('f_hrs').value),
+     prc: parseInt(document.getElementById('f_prc').value),
+     gst: parseInt(document.getElementById('f_gst').value)
+   };
+   schedule[selectedDay][activeIdx] = data;
+   schedule[selectedDay].sort((a,b) => a.time.localeCompare(b.time));
+   render();
+   showEditor();
+ }
+
+ function deleteSession() {
+   schedule[selectedDay].splice(activeIdx, 1);
+   
+   if(schedule[selectedDay].length > 0) {
+     if (activeIdx >= schedule[selectedDay].length) {
+       activeIdx = schedule[selectedDay].length - 1;
+     }
+     showEditor();
+     render();
+   } else {
+     delete schedule[selectedDay];
+     deselect();
+   }
+ }
+
+ function deselect() {
+   selectedDay = null;
+   document.getElementById('editorPanel').style.display = 'none';
+   render();
+ }
+
+ function calc() {
+   let f = 0, m = 0;
+   Object.values(schedule).flat().forEach(s => {
+     const c = s.prc * s.hrs;
+     f += c;
+     m += c / (2 + s.gst);
+   });
+   document.getElementById('sumFull').innerText = Math.round(f).toLocaleString() + ' ₽';
+   document.getElementById('sumMy').innerText = Math.round(m).toLocaleString() + ' ₽';
+ }
+
+ render();
+</script>
+</body>
+</html>
