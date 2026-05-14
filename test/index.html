@@ -422,11 +422,14 @@
      const daysInMonth = new Date(2026, monthIdx + 1, 0).getDate();
      for(let d=1; d<=daysInMonth; d++) {
        if(new Date(2026, monthIdx, d).getDay() === targetWeekday) {
-         if(!schedule[d]) schedule[d] = [];
-         const existsIdx = schedule[d].findIndex(e => e.time === time);
-         if(existsIdx > -1) schedule[d][existsIdx] = {...entry, guests: (d===selectedDayNum ? guests : schedule[d][existsIdx].guests)};
-         else schedule[d].push({...entry, guests: (d===selectedDayNum ? guests : 0)});
-         schedule[d].sort((a,b) => a.time.localeCompare(b.time));
+         // Проверяем: если это выбранный день ИЛИ если день пуст
+         if(d === selectedDayNum || !schedule[d] || schedule[d].length === 0) {
+           if(!schedule[d]) schedule[d] = [];
+           const existsIdx = schedule[d].findIndex(e => e.time === time);
+           if(existsIdx > -1) schedule[d][existsIdx] = {...entry, guests: (d===selectedDayNum ? guests : schedule[d][existsIdx].guests)};
+           else schedule[d].push({...entry, guests: (d===selectedDayNum ? guests : 0)});
+           schedule[d].sort((a,b) => a.time.localeCompare(b.time));
+         }
        }
      }
    } else {
@@ -447,15 +450,24 @@
 
  function toggleBatchPreview() {
    const isChecked = document.getElementById('batchCheck').checked;
+   // Сначала очищаем все превью-выделения
    document.querySelectorAll('.date-cell').forEach(c => c.classList.remove('batch-preview'));
+   
    if (isChecked && selectedDayNum) {
      const monthIdx = parseInt(document.getElementById('monthSelect').value);
      const targetWeekday = new Date(2026, monthIdx, selectedDayNum).getDay();
+     
      document.querySelectorAll('.date-cell').forEach(cell => {
        const dayNumEl = cell.querySelector('.cell-day-num');
        if (dayNumEl) {
          const d = parseInt(dayNumEl.innerText);
-         if (new Date(2026, monthIdx, d).getDay() === targetWeekday && d !== selectedDayNum) cell.classList.add('batch-preview');
+         // Условие: тот же день недели И это не текущий выбранный день И в расписании на этот день ПУСТО
+         const isSameWeekday = new Date(2026, monthIdx, d).getDay() === targetWeekday;
+         const isEmpty = !schedule[d] || schedule[d].length === 0;
+
+         if (isSameWeekday && d !== selectedDayNum && isEmpty) {
+           cell.classList.add('batch-preview');
+         }
        }
      });
    }
